@@ -1,0 +1,17 @@
+# Environments
+venv/
+env/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Data (Never push large datasets)
+data/
+*.csv
+*.gz
+*.sql
+
+# Mac specific
+.DS_Store
