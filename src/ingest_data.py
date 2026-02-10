@@ -13,13 +13,13 @@ def ingest_listings():
         print(f" Error: {file_path} not found.")
         return
 
-    print("🚀 Script started. Reading CSV...")
+    print(" Script started. Reading CSV...")
     df = pd.read_csv(file_path)
-    print(f"📊 Found {len(df)} rows in CSV.")
+    print(f" Found {len(df)} rows in CSV.")
 
     # Data Cleaning: Remove $ and , from price
     if 'price' in df.columns:
-        print("💰 Cleaning price column...")
+        print(" Cleaning price column...")
         df['price'] = df['price'].astype(str).str.replace('[\$,]', '', regex=True).astype(float)
     
     # Map the columns exactly as they appear in your 'head' output
@@ -28,7 +28,8 @@ def ingest_listings():
         'name': 'name',
         'neighbourhood': 'neighborhood', # Matches your CSV 'neighbourhood'
         'room_type': 'room_type',
-        'price': 'price_base'
+        'price': 'price_base',
+        'reviews_per_month': 'reviews_per_month'
     }
     
     # Filter and rename
