@@ -1,31 +1,24 @@
-# 🚀 Dynamic Pricing & Revenue Optimisation Engine
+# 🇬🇧 London Airbnb Revenue Engine (LARE)
 
-An enterprise-grade, data-driven system designed to automate revenue management for short-term rental hosts. This project leverages predictive analytics to close the revenue gap for independent hospitality entrepreneurs.
+## 📌 Project Status: Sprint 1 Complete (Data Foundation)
 
-## 🎯 Project Overview
+**Objective:** Build an Enterprise-Grade Data Warehouse to analyze 35M+ real estate data points.
 
-In the evolving "Sharing Economy," independent hosts often suffer from information asymmetry. This engine bridges that gap by providing:
+### 🏗 System Architecture (Sprint 1)
 
-- **Demand Forecasting:** Time-series analysis to predict booking surges.
-- **Dynamic Pricing:** Multi-factor algorithms to adjust rates in real-time.
-- **Market Benchmarking:** Competitive analysis using hyper-local data.
+1.  **Data Warehouse:** PostgreSQL 14 (Local)
+2.  **ETL Pipeline:** Python (Pandas + SQLAlchemy) for batch processing.
+3.  **External Intelligence:** Integrated `Nager.Date` API for dynamic Holiday Data ingestion (2010-2027).
+4.  **Analytics Engine:** SQL Views (`demand_score`, `monthly_metrics`) for real-time aggregation.
+5.  **Visualization:** Streamlit Dashboard with Correlation Heatmaps & 3D Geospatial Maps.
 
-## 🏗️ Tech Stack
+### 📊 Key Metrics
 
-- **Backend:** FastAPI (Asynchronous Python)
-- **Machine Learning:** Facebook Prophet, Scikit-Learn
-- **Database:** PostgreSQL (Managed natively on macOS)
-- **Data Source:** Inside Airbnb (Open Source)
-- **Frontend:** React.js (Planned)
+- **Total Listings:** ~90,000+
+- **Historical Data Points:** ~35 Million
+- **Data Integrity:** Validated via `qa_check.py` automated suite.
 
-## 🌍 SDG Alignment
+### 🚀 Next Steps (Sprint 2)
 
-- **Goal 8 (Decent Work & Economic Growth):** Empowering small-scale hosts to achieve professional-level economic productivity.
-- **Goal 9 (Industry, Innovation, & Infrastructure):** Building resilient digital infrastructure for the tourism sector through AI.
-
-## 📁 Structure
-
-- `/src`: Core Engine & API logic.
-- `/notebooks`: Exploratory Data Analysis (EDA) & Model Training.
-- `/database`: Schema designs and SQL scripts.
-- `/data`: (Local only) Airbnb Market Datasets.
+- Transition to Microservices Architecture (FastAPI + React).
+- Implement Vector Search for "Cold Start" Pricing.
