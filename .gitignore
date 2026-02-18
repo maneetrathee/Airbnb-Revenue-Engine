@@ -13,4 +13,7 @@ data/
 *.log
 
 # Mac specific
+.DS_Storevenv/
+frontend/node_modules/
+__pycache__/
 .DS_Store
