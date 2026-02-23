@@ -1,5 +1,28 @@
 import { useState } from "react";
-import { Sparkles, Search, Home, PoundSterling, Loader2 } from "lucide-react";
+import {
+  Sparkles,
+  Search,
+  Home,
+  PoundSterling,
+  Loader2,
+  Calendar,
+  MapPin,
+} from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix for default Leaflet icons in React
+import L from "leaflet";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconUrl: markerIcon,
+  iconRetinaUrl: markerIcon2x,
+  shadowUrl: markerShadow,
+});
 
 function App() {
   const [description, setDescription] = useState("");
@@ -9,27 +32,19 @@ function App() {
 
   const handlePredict = async () => {
     if (!description) return;
-
     setLoading(true);
     setError("");
     setResult(null);
 
     try {
-      // Talk to your FastAPI Backend
       const response = await fetch(
         `http://127.0.0.1:8000/api/v1/predict-price?description=${encodeURIComponent(description)}`,
       );
       const data = await response.json();
-
-      if (data.error) {
-        setError(data.error);
-      } else {
-        setResult(data);
-      }
+      if (data.error) setError(data.error);
+      else setResult(data);
     } catch (err) {
-      setError(
-        "❌ Failed to connect to the AI Engine. Is the backend running?",
-      );
+      setError("❌ Failed to connect to the AI Engine.");
     } finally {
       setLoading(false);
     }
@@ -38,7 +53,7 @@ function App() {
   return (
     <div
       style={{
-        maxWidth: "800px",
+        maxWidth: "1000px",
         margin: "0 auto",
         padding: "40px",
         fontFamily: "system-ui, sans-serif",
@@ -57,11 +72,10 @@ function App() {
           }}
         >
           <Sparkles size={36} />
-          AI Pricing Engine
+          AI Revenue Engine
         </h1>
         <p style={{ color: "#666", fontSize: "1.1rem" }}>
-          Describe your property to get an instant, AI-driven nightly rate based
-          on real London market data.
+          Dynamic pricing powered by Vector Search & Market Rules
         </p>
       </div>
 
@@ -76,12 +90,12 @@ function App() {
         }}
       >
         <textarea
-          placeholder="e.g., A cozy 1-bedroom apartment in Notting Hill with a beautiful garden..."
+          placeholder="Describe your property (e.g., Luxury penthouse with skyline views...)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           style={{
             width: "100%",
-            height: "100px",
+            height: "80px",
             padding: "12px",
             borderRadius: "8px",
             border: "1px solid #ccc",
@@ -114,24 +128,19 @@ function App() {
           ) : (
             <Search size={24} />
           )}
-          {loading ? "Analyzing London Market..." : "Generate Pricing"}
+          {loading ? "Calculating..." : "Generate Smart Pricing"}
         </button>
-        {error && (
-          <p style={{ color: "red", marginTop: "12px", textAlign: "center" }}>
-            {error}
-          </p>
-        )}
       </div>
 
       {/* Results Section */}
       {result && (
         <div style={{ animation: "fadeIn 0.5s" }}>
-          {/* Main Price Card */}
+          {/* Base Price Card */}
           <div
             style={{
               backgroundColor: "#eff6ff",
               border: "1px solid #bfdbfe",
-              padding: "30px",
+              padding: "20px",
               borderRadius: "12px",
               textAlign: "center",
               marginBottom: "30px",
@@ -141,104 +150,205 @@ function App() {
               style={{
                 margin: 0,
                 color: "#1e3a8a",
-                fontSize: "1.2rem",
+                fontSize: "1.1rem",
                 textTransform: "uppercase",
-                letterSpacing: "1px",
               }}
             >
-              Cold Start Recommendation
+              AI Base Price (Calculated from Comps)
             </h2>
             <div
-              style={{
-                fontSize: "4rem",
-                fontWeight: "900",
-                color: "#1d4ed8",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: "4px",
-              }}
+              style={{ fontSize: "3rem", fontWeight: "900", color: "#1d4ed8" }}
             >
-              <PoundSterling size={48} />
-              {result.recommended_price.toFixed(2)}
-              <span
-                style={{
-                  fontSize: "1.5rem",
-                  color: "#60a5fa",
-                  fontWeight: "normal",
-                  alignSelf: "flex-end",
-                  paddingBottom: "12px",
-                }}
-              >
-                /night
-              </span>
+              £{result.base_price.toFixed(2)}
             </div>
           </div>
 
-          {/* Similar Listings */}
+          {/* 7-Day Dynamic Forecast */}
           <h3
             style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
               borderBottom: "2px solid #eee",
               paddingBottom: "10px",
-              marginBottom: "20px",
             }}
           >
-            Most Similar Properties Found
+            <Calendar size={24} color="#FF385C" /> 7-Day Dynamic Forecast
           </h3>
-          <div style={{ display: "grid", gap: "16px" }}>
-            {result.similar_listings.map((listing, index) => (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+              gap: "12px",
+              marginBottom: "40px",
+            }}
+          >
+            {result.forecast.map((day, idx) => (
               <div
-                key={index}
+                key={idx}
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "16px",
-                  border: "1px solid #e5e7eb",
+                  padding: "16px 10px",
                   borderRadius: "8px",
-                  backgroundColor: "white",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                  border:
+                    day.day === "Fri" || day.day === "Sat"
+                      ? "2px solid #FF385C"
+                      : "1px solid #e5e7eb",
+                  backgroundColor:
+                    day.day === "Fri" || day.day === "Sat"
+                      ? "#fff1f2"
+                      : "white",
+                  textAlign: "center",
                 }}
               >
                 <div
-                  style={{ display: "flex", alignItems: "center", gap: "12px" }}
+                  style={{
+                    fontSize: "0.9rem",
+                    color: "#6b7280",
+                    fontWeight: "bold",
+                  }}
                 >
-                  <Home color="#9ca3af" size={24} />
-                  <div>
-                    <h4
-                      style={{
-                        margin: 0,
-                        fontSize: "1.1rem",
-                        color: "#111827",
-                      }}
-                    >
-                      {listing.name}
-                    </h4>
-                    <span
-                      style={{
-                        fontSize: "0.85rem",
-                        color: "#059669",
-                        backgroundColor: "#d1fae5",
-                        padding: "2px 8px",
-                        borderRadius: "12px",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {(listing.similarity * 100).toFixed(1)}% Match
-                    </span>
-                  </div>
+                  {day.day}
                 </div>
                 <div
                   style={{
-                    fontSize: "1.2rem",
-                    fontWeight: "bold",
-                    color: "#374151",
+                    fontSize: "0.8rem",
+                    color: "#9ca3af",
+                    marginBottom: "8px",
                   }}
                 >
-                  £{listing.price_base}
+                  {day.date}
+                </div>
+                <div
+                  style={{
+                    fontSize: "1.3rem",
+                    fontWeight: "bold",
+                    color: "#111827",
+                    marginBottom: "6px",
+                  }}
+                >
+                  £{day.price.toFixed(0)}
+                </div>
+                <div
+                  style={{
+                    fontSize: "0.7rem",
+                    color: day.tags[0].includes("+") ? "#059669" : "#6b7280",
+                  }}
+                >
+                  {day.tags[0]}
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Map and Comps Split View */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "24px",
+            }}
+          >
+            {/* Left: List of Comps */}
+            <div>
+              <h3
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  borderBottom: "2px solid #eee",
+                  paddingBottom: "10px",
+                }}
+              >
+                <Home size={24} color="#FF385C" /> Top Market Comparables
+              </h3>
+              <div style={{ display: "grid", gap: "12px" }}>
+                {result.similar_listings.map((listing, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "16px",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                      backgroundColor: "white",
+                    }}
+                  >
+                    <div>
+                      <h4 style={{ margin: "0 0 4px 0", fontSize: "1rem" }}>
+                        {listing.name}
+                      </h4>
+                      <span
+                        style={{
+                          fontSize: "0.8rem",
+                          color: "#059669",
+                          backgroundColor: "#d1fae5",
+                          padding: "2px 8px",
+                          borderRadius: "12px",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {(listing.similarity * 100).toFixed(1)}% Match
+                      </span>
+                    </div>
+                    <div style={{ fontSize: "1.1rem", fontWeight: "bold" }}>
+                      £{listing.price_base}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: Interactive Map */}
+            <div>
+              <h3
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  borderBottom: "2px solid #eee",
+                  paddingBottom: "10px",
+                }}
+              >
+                <MapPin size={24} color="#FF385C" /> Competitor Locations
+              </h3>
+              {/* We center the map on the #1 closest match */}
+              <div
+                style={{
+                  height: "400px",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  border: "1px solid #e5e7eb",
+                }}
+              >
+                <MapContainer
+                  center={[
+                    result.similar_listings[0].latitude,
+                    result.similar_listings[0].longitude,
+                  ]}
+                  zoom={12}
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <TileLayer
+                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+                  />
+                  {result.similar_listings.map((listing, index) => (
+                    <Marker
+                      key={index}
+                      position={[listing.latitude, listing.longitude]}
+                    >
+                      <Popup>
+                        <strong>{listing.name}</strong>
+                        <br />
+                        Price: £{listing.price_base}
+                      </Popup>
+                    </Marker>
+                  ))}
+                </MapContainer>
+              </div>
+            </div>
           </div>
         </div>
       )}
