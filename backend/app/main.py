@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import pandas as pd
 from sqlalchemy import create_engine, text
 from sentence_transformers import SentenceTransformer
@@ -25,7 +26,43 @@ engine = create_engine(DB_URL)
 
 print("🤖 Loading AI Model for API...")
 model = SentenceTransformer('all-MiniLM-L6-v2')
+# --- Pydantic Models ---
 
+class UserOnboard(BaseModel):
+    id: str
+    email: str
+    first_name: str
+    last_name: str
+    role: str
+
+# --- Endpoints ---
+
+@app.post("/api/v1/users/onboard")
+def onboard_user(user_data: UserOnboard):
+    # We use an "UPSERT" (ON CONFLICT) so if the user clicks back and changes 
+    # their mind, it just updates their role instead of crashing.
+    sql = text("""
+        INSERT INTO users (id, email, first_name, last_name, role)
+        VALUES (:id, :email, :first_name, :last_name, :role)
+        ON CONFLICT (id) DO UPDATE 
+        SET role = EXCLUDED.role,
+            first_name = EXCLUDED.first_name,
+            last_name = EXCLUDED.last_name;
+    """)
+    
+    try:
+        with engine.begin() as conn:
+            conn.execute(sql, {
+                "id": user_data.id,
+                "email": user_data.email,
+                "first_name": user_data.first_name,
+                "last_name": user_data.last_name,
+                "role": user_data.role
+            })
+        return {"status": "success", "message": f"User {user_data.email} onboarded as {user_data.role}"}
+    except Exception as e:
+        print(f"Database error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save user data")
 # 3. Endpoints
 @app.get("/api/v1/predict-price")
 def predict_price(description: str = Query(..., description="Describe your property")):
