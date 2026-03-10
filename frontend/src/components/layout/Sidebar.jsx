@@ -1,4 +1,11 @@
-import { Home, LineChart, Map, Settings } from "lucide-react";
+import {
+  Home,
+  LineChart,
+  Map,
+  Settings,
+  Building2,
+  TrendingUp,
+} from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const Sidebar = () => {
@@ -7,21 +14,20 @@ const Sidebar = () => {
   const navItems = [
     { name: "Dashboard", path: "/", icon: Home },
     { name: "Market Intel", path: "/market", icon: LineChart },
+    { name: "Arbitrage", path: "/arbitrage", icon: TrendingUp },
+    { name: "Properties", path: "/properties", icon: Building2 },
     { name: "Property Map", path: "/map", icon: Map },
     { name: "Settings", path: "/settings", icon: Settings },
   ];
 
   return (
     <div className="w-64 bg-dark text-white flex flex-col h-screen fixed left-0 top-0 shadow-2xl z-20">
-      {/* Logo Area */}
       <div className="h-20 flex items-center gap-3 px-6 border-b border-gray-800">
         <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-brand/30">
           R
         </div>
         <span className="text-xl font-bold tracking-tight">RevEngine</span>
       </div>
-
-      {/* Navigation Links */}
       <nav className="flex-1 px-4 py-6 space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -42,8 +48,6 @@ const Sidebar = () => {
           );
         })}
       </nav>
-
-      {/* Footer */}
       <div className="p-6 border-t border-gray-800 text-xs text-gray-500 font-medium">
         © 2026 RevEngine AI
       </div>
