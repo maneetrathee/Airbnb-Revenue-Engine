@@ -1,0 +1,10 @@
+flowchart TB
+  %% Smart Sync Automation & Reporting
+  U["User sets guardrails\n(global + per-property)"] --> SCH["Nightly scheduler run\n(APScheduler)"]
+  SCH --> PE[Pricing engine computes\nper-property prices]
+  PE --> LOGS["Store results\n(sync_logs in Postgres)"]
+  LOGS --> DIG["Generate summaries\n(daily/weekly digest)"]
+  DIG --> SEND["Send emails\n(Resend)"]
+  SEND --> U
+
+  MAN["Manual Run Now trigger"] --> PE

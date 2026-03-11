@@ -1,0 +1,41 @@
+flowchart LR
+  %% Airbnb Revenue Engine – System Architecture
+  subgraph FE["React Frontend (Dashboard UI)"]
+    FE1[Pricing Dashboard]
+    FE2["Market Intel (RevPAR)"]
+    FE3[Arbitrage]
+    FE4[Properties]
+    FE5[Settings / Smart Sync]
+    AUTH[Clerk Auth]
+  end
+
+  subgraph BE["FastAPI Backend"]
+    B1["Pricing Service\n(forecast + signals)"]
+    B2[RevPAR Analytics Service]
+    B3[Arbitrage Service]
+    B4[Properties Service]
+    B5[Smart Sync Service]
+    B6[Email Digest Service]
+  end
+
+  subgraph DB["PostgreSQL Database"]
+    D1[listings]
+    D2[monthly_metrics]
+    D3[properties]
+    D4[sync_settings]
+    D5[property_sync_settings]
+    D6[sync_logs]
+  end
+
+  subgraph SCH["APScheduler Jobs"]
+    S1[Nightly Sync]
+    S2[Daily Digest]
+    S3[Weekly Report]
+  end
+
+  EMAIL[Resend Email]
+
+  FE -->|REST API| BE
+  BE --> DB
+  SCH --> BE
+  B6 --> EMAIL

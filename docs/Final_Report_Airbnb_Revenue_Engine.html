@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Airbnb Revenue Engine – Final Report</title>
+    <style>
+      :root {
+        --text: #111827;
+        --muted: #4b5563;
+        --border: #e5e7eb;
+        --accent: #2563eb;
+        --bg: #ffffff;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+          "Segoe UI Emoji";
+      }
+
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        color: var(--text);
+        background: var(--bg);
+        line-height: 1.45;
+        font-size: 12.2pt;
+      }
+
+      @page {
+        size: A4;
+        margin: 18mm 16mm 18mm 16mm;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 22px 18px 40px;
+      }
+
+      h1 {
+        font-size: 22pt;
+        margin: 0 0 6px 0;
+        letter-spacing: -0.02em;
+      }
+      h2 {
+        font-size: 15.5pt;
+        margin: 18px 0 8px 0;
+        padding-top: 6px;
+        border-top: 1px solid var(--border);
+      }
+      h3 {
+        font-size: 12.8pt;
+        margin: 14px 0 6px 0;
+      }
+
+      .meta {
+        margin-top: 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+      }
+      .meta div { color: var(--muted); margin: 2px 0; }
+      .meta b { color: var(--text); }
+
+      .hr {
+        height: 1px;
+        background: var(--border);
+        margin: 16px 0;
+      }
+
+      .section-note {
+        color: var(--muted);
+        font-size: 11pt;
+        margin: 2px 0 10px 0;
+      }
+
+      ul { margin: 6px 0 8px 20px; }
+      li { margin: 3px 0; }
+
+      .figure {
+        margin: 10px 0 14px 0;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        page-break-inside: avoid;
+      }
+      .figure-title {
+        font-weight: 700;
+        margin: 0 0 8px 0;
+      }
+      img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .caption {
+        color: var(--muted);
+        font-size: 10.8pt;
+        margin-top: 8px;
+      }
+
+      .equation {
+        font-family: var(--mono);
+        background: #f9fafb;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 8px 10px;
+        display: inline-block;
+        margin: 6px 0;
+      }
+
+      .avoid-break { page-break-inside: avoid; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Airbnb Revenue Engine (Final Year B.Tech Project)</h1>
+      <div class="section-note">Submission Report (≤ 6 pages)</div>
+
+      <div class="meta">
+        <div><b>Student</b>: ____________________</div>
+        <div><b>University / College</b>: ____________________</div>
+        <div><b>Department</b>: ____________________</div>
+        <div><b>Guide / Supervisor</b>: ____________________</div>
+        <div><b>Date</b>: ____________________</div>
+      </div>
+
+      <div class="hr"></div>
+
+      <h2>Abstract</h2>
+      <p>
+        Short‑term rental (STR) pricing is highly dynamic and influenced by seasonality, occupancy trends, lead time,
+        competitor positioning, and local demand shocks. Many hosts either price manually or rely on opaque “smart pricing”
+        tools that do not explain decisions and do not integrate market intelligence or investment feasibility. This project
+        delivers an end‑to‑end <b>Airbnb Revenue Engine</b> that provides (i) AI‑assisted explainable dynamic pricing and
+        forecasting, (ii) neighborhood‑level RevPAR analytics and recommendations, (iii) investment arbitrage simulation
+        (Airbnb vs Buy‑to‑Let), and (iv) operational automation using scheduled syncs and email digests. The system is
+        implemented as a full‑stack application using <b>React + FastAPI + PostgreSQL</b>, with scheduled workflows via
+        <b>APScheduler</b> and reporting via <b>email digests</b>.
+      </p>
+
+      <h2>1. Problem Statement and Objectives</h2>
+      <h3>1.1 Problem Statement</h3>
+      <p>
+        STR hosts must decide nightly pricing under uncertainty. Demand changes frequently due to seasonality and day‑of‑week
+        effects, booking lead time and length of stay, neighborhood occupancy variation, competitor pricing, and events/holidays.
+        Manual pricing is inconsistent and time‑consuming. Existing tools may provide a price but often are black‑box, generic,
+        and do not connect operational pricing to market intelligence (RevPAR/ADR/occupancy) or investment viability (arbitrage).
+      </p>
+      <h3>1.2 Objectives</h3>
+      <ul>
+        <li>Build an explainable dynamic pricing engine with a multi‑day forecast.</li>
+        <li>Provide Market Intelligence using ADR, occupancy, RevPAR, and trends.</li>
+        <li>Generate actionable guidance (raise/hold/drop) from RevPAR analytics.</li>
+        <li>Provide investment arbitrage analysis with pessimistic/base/optimistic scenarios.</li>
+        <li>Implement Smart Sync automation with logs and scheduled reporting.</li>
+        <li>Deliver a usable full‑stack product with authentication and dashboards.</li>
+      </ul>
+
+      <h2>2. Literature Review</h2>
+      <h3>2.1 Revenue Management and Dynamic Pricing</h3>
+      <p>
+        Dynamic pricing is widely adopted in airlines and hotels to maximize expected revenue under uncertain demand. STR pricing
+        can be modeled similarly using interpretable signals (e.g., occupancy pressure, lead time) and market anchoring via comparable
+        listings.
+      </p>
+      <h3>2.2 STR KPIs and RevPAR</h3>
+      <p>Key metrics used in hospitality analytics include ADR (Average Daily Rate), occupancy rate, and RevPAR:</p>
+      <div class="equation">RevPAR = ADR × Occupancy Rate</div>
+      <h3>2.3 Competitor-aware Pricing and Similarity Search</h3>
+      <p>
+        Competitor positioning (“comps”) is frequently used to anchor pricing. Similarity can be calculated from structured data
+        (room type, neighborhood) and from semantic text embeddings of listing descriptions.
+      </p>
+      <h3>2.4 Explainability in Decision Support</h3>
+      <p>
+        User trust increases when systems explain why a recommendation was produced. A common approach is exposing the contribution
+        of each factor/signal to the final decision.
+      </p>
+      <h3>2.5 Automation, Monitoring, and Reporting</h3>
+      <p>
+        Industry systems reduce manual work via scheduling, logging, and periodic reporting (digests/weekly summaries). These features
+        improve consistency and operational usability.
+      </p>
+
+      <h2>3. Methodology / System Design</h2>
+      <h3>3.1 System Architecture</h3>
+      <p>
+        The project is designed as a full‑stack system: React frontend with Clerk authentication; FastAPI backend exposing pricing,
+        RevPAR, arbitrage, properties, and sync APIs; PostgreSQL for market data and application state; APScheduler for nightly sync
+        and periodic reports; and Resend for email delivery.
+      </p>
+
+      <div class="figure">
+        <div class="figure-title">Figure 1: System Architecture</div>
+        <img src="diagrams/system-architecture.png" alt="System Architecture Diagram" />
+        <div class="caption">Frontend dashboards call backend REST APIs; scheduler and email services enable automation and reporting.</div>
+      </div>
+
+      <h3>3.2 Pricing Engine (Explainable Signals + Guardrails)</h3>
+      <p>
+        Inputs (neighborhood, date & nights, min/max guardrails, optional description) flow through market data retrieval and comparable
+        listing discovery, then a signal-based pricing model generates a final recommended price. Guardrails are enforced by clamping the
+        output to configured limits, and the system returns an explainable breakdown plus a multi‑day forecast.
+      </p>
+
+      <div class="figure">
+        <div class="figure-title">Figure 2: Pricing Engine Pipeline</div>
+        <img src="diagrams/pricing-engine-pipeline.png" alt="Pricing Engine Pipeline" />
+        <div class="caption">Explainable pipeline: base anchor + signals → aggregation → guardrails → price & forecast outputs.</div>
+      </div>
+
+      <h3>3.3 RevPAR Analytics and Recommendation</h3>
+      <p>
+        For a selected neighborhood the backend computes ADR, occupancy, RevPAR, listing count, and trend. Based on observed market
+        strength/weakness, the system produces an actionable recommendation (raise/hold/drop) with reasoning.
+      </p>
+
+      <h3>3.4 Investment Arbitrage Method</h3>
+      <p>
+        Inputs (purchase price, room type, LTV, interest rate, mortgage type) are evaluated under pessimistic/base/optimistic scenarios.
+        The module compares Airbnb returns against a Buy‑to‑Let baseline and produces a verdict and financial metrics.
+      </p>
+
+      <h3>3.5 Smart Sync Automation and Reporting</h3>
+      <p>
+        Users configure global and per‑property guardrails. Nightly scheduler runs pricing for eligible properties, stores results in logs,
+        and generates daily/weekly email summaries.
+      </p>
+
+      <div class="figure">
+        <div class="figure-title">Figure 3: Smart Sync Automation Loop</div>
+        <img src="diagrams/smart-sync-loop.png" alt="Smart Sync Loop" />
+        <div class="caption">Automation loop improves consistency and reduces manual operational effort.</div>
+      </div>
+
+      <h2>4. Implementation Completed So Far (≥ 50%)</h2>
+      <h3>4.1 Backend (Completed)</h3>
+      <ul>
+        <li>Pricing engine with multi‑signal explainable logic and multi‑day forecast.</li>
+        <li>Predict‑price endpoint using comparable listings (similarity search) + forecast enrichment.</li>
+        <li>RevPAR APIs: neighborhoods, summary, trend, and optimization recommendation.</li>
+        <li>Arbitrage API: scenario simulation + Airbnb vs Buy‑to‑Let comparison.</li>
+        <li>Properties APIs: CRUD + per‑property sync settings.</li>
+        <li>Smart Sync APIs: global settings, manual trigger, and sync logs.</li>
+        <li>Scheduler jobs: nightly sync, daily digest, weekly report.</li>
+        <li>Email digest/report generation and sending.</li>
+      </ul>
+
+      <h3>4.2 Frontend (Completed)</h3>
+      <ul>
+        <li>Dashboard shell (sidebar + routed pages) with authentication integration.</li>
+        <li>Pricing dashboard: input → KPIs → forecast → competitor list + map.</li>
+        <li>Market Intel dashboard: neighborhood selection → KPIs → trend chart → optimizer.</li>
+        <li>Arbitrage dashboard: input form → scenario outputs → exportable report.</li>
+        <li>Properties page: CRUD + per‑property sync configuration.</li>
+        <li>Settings page: Smart Sync configuration + scheduler status + logs + email setup/test.</li>
+      </ul>
+      <p class="avoid-break">
+        <b>50% completion justification</b>: the primary workflows are implemented end‑to‑end (UI → APIs → logic/DB → outputs) and are demonstrable.
+      </p>
+
+      <h2>5. Results / Output (Current)</h2>
+      <ul>
+        <li><b>AI Pricing</b>: recommended nightly price, signal breakdown, multi‑day forecast, comparable listings visualization.</li>
+        <li><b>Market Intel</b>: RevPAR/ADR/occupancy KPIs, neighborhood trends, pricing action recommendation.</li>
+        <li><b>Arbitrage</b>: scenario outputs with verdict and comparison against Buy‑to‑Let.</li>
+        <li><b>Automation</b>: scheduler status, sync logs history, and email digest/report capability.</li>
+      </ul>
+      <p class="section-note">Tip: insert 3–5 screenshots here if your department expects “Results” evidence.</p>
+
+      <h2>6. Future Work Plan</h2>
+      <h3>6.1 Industry-level hardening</h3>
+      <ul>
+        <li>Standardize configuration (remove hardcoded URLs; consistent environment variables).</li>
+        <li>Refactor backend into clean layers (routers vs services; central DB/config).</li>
+        <li>Consistent request/response models, validation, and error handling.</li>
+        <li>Stronger multi‑tenant security (authenticated user scoping for all data).</li>
+        <li>Unit + integration tests and CI automation.</li>
+      </ul>
+      <h3>6.2 Innovation roadmap (impact + patent direction)</h3>
+      <ul>
+        <li>Explainable pricing waterfall chart (base price + each signal contribution).</li>
+        <li>Multi‑objective strategy modes (occupancy‑max / revenue‑max / balanced / risk‑averse).</li>
+        <li>Closed‑loop tuning using logged outcomes to adapt signal weights per neighborhood/property.</li>
+        <li>Event/anomaly‑aware pricing using calendar/event signals and pattern similarity.</li>
+      </ul>
+      <h3>6.3 Deployment and documentation</h3>
+      <ul>
+        <li>Docker deployment (frontend + backend + postgres) with <span style="font-family: var(--mono)">.env.example</span>.</li>
+        <li>Improved README, demo script, and diagrams.</li>
+        <li>Dataset documentation (sources, proxies, limitations).</li>
+      </ul>
+    </div>
+  </body>
+</html>
+

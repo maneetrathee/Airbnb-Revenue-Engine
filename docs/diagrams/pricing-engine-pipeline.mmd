@@ -1,0 +1,11 @@
+flowchart LR
+  %% Pricing Engine Pipeline (Explainable)
+  IN[Inputs\n- neighborhood\n- date & nights\n- min/max guardrails\n- property description] --> MD["Market Data Fetch\n(listings + metrics)"]
+  IN --> SIM["Similar Listings\n(embeddings / comps)"]
+  MD --> BASE[Base Price Anchor]
+  SIM --> BASE
+
+  BASE --> SIG[Pricing Signals\n- occupancy\n- lead time\n- competitor pressure\n- length of stay\n- last-minute surge]
+  SIG --> AGG["Aggregation\n(weighted adjustments)"]
+  AGG --> CLAMP["Guardrail Clamp\n(min/max + sanity checks)"]
+  CLAMP --> OUT[Outputs\n- recommended price\n- signal breakdown\n- confidence/risk band\n- 7-day forecast]
