@@ -13,7 +13,7 @@ import lightgbm as lgb
 import xgboost as xgb
 from catboost import CatBoostRegressor
 
-from feature_engineering import (
+from app.ml.feature_engineering import (
     load_training_data, engineer_features,
     prepare_dataset, get_feature_columns
 )

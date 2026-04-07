@@ -14,7 +14,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-from feature_engineering import (
+from app.ml.feature_engineering import (
     load_training_data, engineer_features,
     prepare_dataset, get_feature_columns
 )
@@ -500,7 +500,7 @@ if __name__ == "__main__":
 import sys
 if "--cv" in sys.argv:
     print("\nRunning 5-Fold Cross Validation (takes ~5 minutes)...")
-    from feature_engineering import load_training_data, engineer_features, prepare_dataset
+    from app.ml.feature_engineering import load_training_data, engineer_features, prepare_dataset
     import lightgbm as lgb
 
     df = load_training_data()

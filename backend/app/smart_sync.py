@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 from datetime import datetime
-from pricing_engine import PricingContext, calculate_price
+from app.pricing_engine import PricingContext, calculate_price
 from datetime import date
 
 router = APIRouter(prefix="/api/v1/sync", tags=["SmartSync"])

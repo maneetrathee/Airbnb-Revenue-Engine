@@ -9,12 +9,12 @@ import logging
 import os
 from dotenv import load_dotenv
 
-from revpar import router as revpar_router
-from smart_sync import router as sync_router
-from properties import router as properties_router
-from scheduler import create_scheduler, get_scheduler_status, run_nightly_sync
-from pricing_engine import PricingContext, calculate_price, calculate_forecast
-from ml.ml_router import router as ml_router
+from app.revpar import router as revpar_router
+from app.smart_sync import router as sync_router
+from app.properties import router as properties_router
+from app.scheduler import create_scheduler, get_scheduler_status, run_nightly_sync
+from app.pricing_engine import PricingContext, calculate_price, calculate_forecast
+from app.ml.ml_router import router as ml_router
 
 load_dotenv()
 
@@ -106,7 +106,7 @@ def send_test_email(user_id: str):
     if not row or not row.email:
         raise HTTPException(400, "No email saved for this user. Save email first via POST /api/v1/users/{user_id}/email")
 
-    from email_digest import send_daily_digest
+    from app.email_digest import send_daily_digest
     success = send_daily_digest(row.email, user_id)
 
     if success:
@@ -216,5 +216,5 @@ def predict_price(description: str = Query(...)):
 
 
 # ── Arbitrage router (Feature 3) ──────────────────────────────────────────────
-from arbitrage import router as arbitrage_router
+from app.arbitrage import router as arbitrage_router
 app.include_router(arbitrage_router)

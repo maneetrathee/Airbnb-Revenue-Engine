@@ -12,7 +12,7 @@ Runs:
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from sqlalchemy import create_engine, text
-from pricing_engine import PricingContext, calculate_price
+from app.pricing_engine import PricingContext, calculate_price
 from datetime import datetime, date
 import logging
 
@@ -102,7 +102,7 @@ def run_daily_digest():
     """8am daily — send sync summary emails."""
     logger.info("[Scheduler] Sending daily digest emails...")
     try:
-        from email_digest import send_all_daily_digests
+        from app.email_digest import send_all_daily_digests
         email_map = _get_user_email_map()
         send_all_daily_digests(email_map)
     except Exception as e:
@@ -113,7 +113,7 @@ def run_weekly_report():
     """Monday 8am — send weekly RevPAR report emails."""
     logger.info("[Scheduler] Sending weekly report emails...")
     try:
-        from email_digest import send_all_weekly_reports
+        from app.email_digest import send_all_weekly_reports
         email_map = _get_user_email_map()
         send_all_weekly_reports(email_map)
     except Exception as e:
