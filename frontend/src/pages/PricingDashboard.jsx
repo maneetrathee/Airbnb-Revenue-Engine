@@ -45,7 +45,7 @@ const PricingDashboard = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/predict-price?description=${encodeURIComponent(description)}`,
+        import.meta.env.VITE_API_URL + `/api/v1/predict-price?description=${encodeURIComponent(description)}`,
       );
       const data = await response.json();
       if (data.error) setError(data.error);

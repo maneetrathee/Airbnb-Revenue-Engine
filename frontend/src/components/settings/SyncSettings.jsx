@@ -7,7 +7,7 @@ import {
   Building2, Play, Mail
 } from "lucide-react";
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_URL + "";
 
 const Card = ({ children, className = "" }) => (
   <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm p-6 ${className}`}>

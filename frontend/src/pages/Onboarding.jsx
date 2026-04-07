@@ -24,7 +24,7 @@ const Onboarding = () => {
     try {
       // 2. Send it to your FastAPI backend
       const response = await fetch(
-        "http://127.0.0.1:8000/api/v1/users/onboard",
+        import.meta.env.VITE_API_URL + "/api/v1/users/onboard",
         {
           method: "POST",
           headers: {
