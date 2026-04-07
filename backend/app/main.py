@@ -6,12 +6,17 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 from datetime import datetime, timedelta, date
 import logging
+import os
+from dotenv import load_dotenv
 
 from revpar import router as revpar_router
 from smart_sync import router as sync_router
 from properties import router as properties_router
 from scheduler import create_scheduler, get_scheduler_status, run_nightly_sync
 from pricing_engine import PricingContext, calculate_price, calculate_forecast
+from ml.ml_router import router as ml_router
+
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("main")
@@ -35,8 +40,9 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True,
 app.include_router(revpar_router)
 app.include_router(sync_router)
 app.include_router(properties_router)
+app.include_router(ml_router)
 
-DB_URL = "postgresql://localhost:5432/airbnb_engine"
+DB_URL = os.getenv("DATABASE_URL", "postgresql://localhost:5432/airbnb_engine")
 engine = create_engine(DB_URL)
 
 # ── Ensure email column exists in sync_settings ───────────────────────────────

@@ -7,6 +7,8 @@ import RevPARDashboard from "./pages/RevPARDashboard";
 import SettingsPage from "./pages/SettingsPage";
 import PropertiesPage from "./pages/PropertiesPage";
 import ArbitragePage from "./pages/ArbitragePage";
+import MLPredictionPage from "./pages/MLPredictionPage";
+import MLComparisonPage from "./pages/MLComparisonPage";
 
 const LoginPage = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 animate-in fade-in duration-500">
@@ -61,11 +63,13 @@ function App() {
               <SignedIn>
                 <Routes>
                   <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="/ml/comparison" element={<MLComparisonPage />} />
                   <Route
                     path="/*"
                     element={
                       <DashboardLayout>
                         <Routes>
+                          <Route path="/ml" element={<MLPredictionPage />} />
                           <Route path="/" element={<PricingDashboard />} />
                           <Route path="/market" element={<RevPARDashboard />} />
                           <Route

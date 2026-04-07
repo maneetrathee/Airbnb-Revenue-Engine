@@ -1,12 +1,17 @@
 import pandas as pd
 from sqlalchemy import create_engine, text
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+DB_URL = os.getenv("DATABASE_URL", "postgresql://localhost:5432/airbnb_engine")
 
 def run_qa_checks():
     print("🕵️‍♀️ Starting System Diagnostics (QA Check)...")
     
     # 1. Connect to Database
     try:
-        engine = create_engine("postgresql://localhost:5432/airbnb_engine")
+        engine = create_engine(DB_URL)
         conn = engine.connect()
         print("   ✅ Database Connection: ACTIVE")
     except Exception as e:

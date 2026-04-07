@@ -2,9 +2,14 @@ import requests
 import pandas as pd
 from sqlalchemy import create_engine
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+DB_URL = os.getenv("DATABASE_URL", "postgresql://localhost:5432/airbnb_engine")
 
 # 1. Setup Database Connection
-engine = create_engine("postgresql://localhost:5432/airbnb_engine")
+engine = create_engine(DB_URL)
 
 def fetch_uk_holidays(start_year=2010, future_years=2):
     """

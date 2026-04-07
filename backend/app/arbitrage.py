@@ -1,3 +1,7 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 """
 Investment Arbitrage Router — Feature 3
 ========================================
@@ -15,7 +19,7 @@ from typing import Optional
 
 router = APIRouter(prefix="/api/v1/arbitrage", tags=["Arbitrage"])
 
-DB_URL = "postgresql://localhost:5432/airbnb_engine"
+DB_URL = os.getenv("DATABASE_URL", "postgresql://localhost:5432/airbnb_engine")
 engine = create_engine(DB_URL)
 
 # ── Constants ─────────────────────────────────────────────────────────────────

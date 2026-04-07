@@ -2,9 +2,13 @@ import pandas as pd
 from sentence_transformers import SentenceTransformer
 from sqlalchemy import create_engine, text
 import time
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # 1. Setup Database Connection
-DB_URL = "postgresql://localhost:5432/airbnb_engine"
+DB_URL = os.getenv("DATABASE_URL", "postgresql://localhost:5432/airbnb_engine")
 engine = create_engine(DB_URL)
 
 # 2. Load the AI Model

@@ -1,3 +1,7 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 """
 Properties Router
 Endpoints:
@@ -17,7 +21,7 @@ from datetime import datetime
 
 router = APIRouter(prefix="/api/v1/properties", tags=["Properties"])
 
-DB_URL = "postgresql://localhost:5432/airbnb_engine"
+DB_URL = os.getenv("DATABASE_URL", "postgresql://localhost:5432/airbnb_engine")
 engine = create_engine(DB_URL)
 
 # ── Create tables on startup ──────────────────────────────────────────────────

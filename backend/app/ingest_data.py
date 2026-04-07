@@ -1,9 +1,12 @@
 import pandas as pd
 from sqlalchemy import create_engine
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Connection setup
-DB_URL = "postgresql://localhost:5432/airbnb_engine"
+DB_URL = os.getenv("DATABASE_URL", "postgresql://localhost:5432/airbnb_engine")
 engine = create_engine(DB_URL)
 
 def ingest_listings():

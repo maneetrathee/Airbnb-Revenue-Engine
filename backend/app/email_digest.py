@@ -23,7 +23,7 @@ load_dotenv()
 
 logger = logging.getLogger("email_digest")
 
-DB_URL = "postgresql://localhost:5432/airbnb_engine"
+DB_URL = os.getenv("DATABASE_URL", "postgresql://localhost:5432/airbnb_engine")
 engine = create_engine(DB_URL)
 
 # Resend setup — reads from .env

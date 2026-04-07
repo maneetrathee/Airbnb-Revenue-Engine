@@ -1,0 +1,94 @@
+{
+  "trained_at": "20260403_153856",
+  "test_rows": null,
+  "feature_columns": [
+    "room_type_score",
+    "is_entire_property",
+    "accommodates",
+    "bedrooms",
+    "beds",
+    "bathrooms",
+    "amenity_count",
+    "minimum_nights",
+    "availability_365",
+    "instant_bookable",
+    "host_is_superhost",
+    "host_identity_verified",
+    "host_response_rate",
+    "host_acceptance_rate",
+    "calculated_host_listings_count",
+    "number_of_reviews",
+    "number_of_reviews_ltm",
+    "reviews_per_month",
+    "review_scores_rating",
+    "review_scores_cleanliness",
+    "review_scores_location",
+    "review_scores_value",
+    "estimated_occupancy_l365d",
+    "estimated_revenue_l365d",
+    "revenue_per_night_est",
+    "latitude",
+    "longitude",
+    "neighbourhood_encoded",
+    "neighbourhood_group_encoded",
+    "neighbourhood_median_price",
+    "neighbourhood_mean_price",
+    "neighbourhood_avg_occupancy",
+    "neighbourhood_avg_revenue",
+    "neighbourhood_listing_count",
+    "neighbourhood_avg_rating",
+    "neighbourhood_avg_accommodates"
+  ],
+  "results": [
+    {
+      "model": "Linear Regression",
+      "MAE": 63.71,
+      "RMSE": 123.45,
+      "R2": 0.518,
+      "MAPE": 44.61
+    },
+    {
+      "model": "Ridge Regression",
+      "MAE": 63.71,
+      "RMSE": 123.57,
+      "R2": 0.5171,
+      "MAPE": 44.65
+    },
+    {
+      "model": "Lasso Regression",
+      "MAE": 63.63,
+      "RMSE": 123.87,
+      "R2": 0.5147,
+      "MAPE": 44.86
+    },
+    {
+      "model": "Random Forest",
+      "MAE": 26.9,
+      "RMSE": 89.63,
+      "R2": 0.746,
+      "MAPE": 14.23
+    },
+    {
+      "model": "XGBoost",
+      "MAE": 27.58,
+      "RMSE": 84.14,
+      "R2": 0.7761,
+      "MAPE": 15.48
+    },
+    {
+      "model": "LightGBM",
+      "MAE": 28.57,
+      "RMSE": 83.89,
+      "R2": 0.7774,
+      "MAPE": 16.69
+    },
+    {
+      "model": "CatBoost",
+      "MAE": 28.96,
+      "RMSE": 84.02,
+      "R2": 0.7768,
+      "MAPE": 17.21
+    }
+  ],
+  "best_model": "LightGBM"
+}

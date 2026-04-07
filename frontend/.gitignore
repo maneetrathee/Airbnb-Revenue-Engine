@@ -1,24 +1,20 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+cat >> /Users/maneetrathee/Desktop/Projects/Airbnb-Revenue-Engine/.gitignore << 'EOF'
+# Environment
+.env
+backend/.env
+frontend/.env
 
-node_modules
-dist
-dist-ssr
-*.local
+# ML Models (too large for git)
+backend/app/ml/saved_models/*.pkl
+backend/app/ml/saved_models/*.json
+backend/app/ml/research_outputs/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# Data files (too large)
+data/calendar.csv
+data/listings.csv.gz
+EOF

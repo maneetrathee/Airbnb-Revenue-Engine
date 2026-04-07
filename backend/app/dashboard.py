@@ -3,12 +3,17 @@ import pandas as pd
 from sqlalchemy import create_engine
 import seaborn as sns
 import matplotlib.pyplot as plt
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+DB_URL = os.getenv("DATABASE_URL", "postgresql://localhost:5432/airbnb_engine")
 
 # 1. Database Connection
 # We cache this so it doesn't reload every time you click a button
 @st.cache_resource
 def get_db_engine():
-    return create_engine("postgresql://localhost:5432/airbnb_engine")
+    return create_engine(DB_URL)
 
 engine = get_db_engine()
 

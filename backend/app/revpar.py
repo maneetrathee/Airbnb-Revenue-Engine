@@ -1,3 +1,7 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 """
 RevPAR & Occupancy Router
 Endpoints:
@@ -12,7 +16,7 @@ from sqlalchemy import create_engine, text
 
 router = APIRouter(prefix="/api/v1/revpar", tags=["RevPAR"])
 
-DB_URL = "postgresql://localhost:5432/airbnb_engine"
+DB_URL = os.getenv("DATABASE_URL", "postgresql://localhost:5432/airbnb_engine")
 engine = create_engine(DB_URL)
 
 
@@ -44,11 +48,8 @@ def get_revpar_summary(neighborhood: str = Query(..., description="Neighborhood 
             SELECT
                 AVG(mm.estimated_revenue / NULLIF(mm.total_days, 0)) AS avg_nightly_rate,
                 AVG(mm.occupancy_rate)                                AS occupancy_rate,
-                -- RevPAR = ADR × Occupancy%
-                AVG(
-                    (mm.estimated_revenue / NULLIF(mm.total_days, 0))
-                    * (mm.occupancy_rate / 100.0)
-                )                                                     AS revpar,
+                -- RevPAR = total revenue / total available nights (correct definition)
+                AVG(mm.estimated_revenue / NULLIF(mm.total_days, 0)) AS revpar,
                 COUNT(DISTINCT mm.listing_id)                         AS total_listings
             FROM monthly_metrics mm
             WHERE mm.neighborhood = :n
@@ -104,8 +105,7 @@ def get_revpar_trend(neighborhood: str = Query(..., description="Neighborhood na
                 month,
                 ROUND(AVG(occupancy_rate)::numeric, 2)          AS occupancy_rate,
                 ROUND(AVG(
-                    (estimated_revenue / NULLIF(total_days, 0))
-                    * (occupancy_rate / 100.0)
+                    estimated_revenue / NULLIF(total_days, 0)
                 )::numeric, 2)                                   AS revpar,
                 ROUND(AVG(
                     estimated_revenue / NULLIF(total_days, 0)
@@ -202,8 +202,9 @@ def get_pricing_recommendation(neighborhood: str = Query(..., description="Neigh
             f"more than compensates, lifting your RevPAR."
         )
 
+    current_revpar_inline = round(adr * (occ / 100), 2)
     projected_revpar = round(new_adr * (new_occ / 100), 2)
-    revpar_uplift = round(projected_revpar - revpar, 2)
+    revpar_uplift = round(projected_revpar - current_revpar_inline, 2)
 
     return {
         "neighborhood":     neighborhood,
@@ -213,7 +214,7 @@ def get_pricing_recommendation(neighborhood: str = Query(..., description="Neigh
         "current": {
             "adr":          round(adr, 2),
             "occupancy_rate": round(occ, 2),
-            "revpar":       round(revpar, 2),
+            "revpar":       current_revpar_inline,
         },
         "projected": {
             "adr":          round(new_adr, 2),

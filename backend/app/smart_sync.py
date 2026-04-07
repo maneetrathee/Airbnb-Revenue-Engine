@@ -1,3 +1,7 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 """
 Smart Sync Router — now powered by pricing_engine.py
 """
@@ -9,7 +13,7 @@ from pricing_engine import PricingContext, calculate_price
 from datetime import date
 
 router = APIRouter(prefix="/api/v1/sync", tags=["SmartSync"])
-DB_URL = "postgresql://localhost:5432/airbnb_engine"
+DB_URL = os.getenv("DATABASE_URL", "postgresql://localhost:5432/airbnb_engine")
 engine = create_engine(DB_URL)
 
 def ensure_tables():

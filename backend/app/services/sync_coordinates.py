@@ -1,8 +1,12 @@
 import pandas as pd
 from sqlalchemy import create_engine, text
 import time
+import os
+from dotenv import load_dotenv
 
-DB_URL = "postgresql://localhost:5432/airbnb_engine"
+load_dotenv()
+
+DB_URL = os.getenv("DATABASE_URL", "postgresql://localhost:5432/airbnb_engine")
 engine = create_engine(DB_URL)
 
 # Update this path to where your original CSV is stored!

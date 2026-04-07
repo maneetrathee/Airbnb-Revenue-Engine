@@ -7,6 +7,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { Brain } from "lucide-react";
+import { Trophy } from "lucide-react";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -18,6 +20,8 @@ const Sidebar = () => {
     { name: "Properties", path: "/properties", icon: Building2 },
     { name: "Property Map", path: "/map", icon: Map },
     { name: "Settings", path: "/settings", icon: Settings },
+    { name: "ML Prediction", path: "/ml", icon: Brain },
+    { name: "Model Comparison", path: "/ml/comparison", icon: Trophy },
   ];
 
   return (
