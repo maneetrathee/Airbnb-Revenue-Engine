@@ -1,7 +1,10 @@
 """
 Events & Holiday Surge API
-GET /api/v1/events/holidays?year=2026
-GET /api/v1/events/surge?neighborhood=Westminster&year=2026&month=8
+Parabola centered on Sat/Sun — holidays either side build UP to the weekend peak.
+
+Mon holiday:   Fri+25% → Sat+45% → Sun+45% → Mon+35%
+Thu holiday:   Thu+35% → Fri+45% → Sat+50% → Sun+45% → Mon+35%
+5-day(Thu+Mon): Thu+40% → Fri+50% → Sat+60% → Sun+60% → Mon+50% → Tue+40%
 """
 
 from fastapi import APIRouter, Query
@@ -60,181 +63,189 @@ async def fetch_uk_holidays(year: int) -> list:
         {"date": "2026-12-28", "name": "Boxing Day (substitute)", "tier": "high"},
     ]
 
-def _classify_day(d: date, holiday_dates: set, month_events: list) -> dict:
+def _collect_anchors(year: int, month: int, holiday_dates: dict) -> dict:
+    """All high-significance dates with their base scores."""
+    anchors = {}
+    days_in_month = calendar.monthrange(year, month)[1]
+    for day in range(1, days_in_month + 1):
+        d  = date(year, month, day)
+        ds = d.strftime("%Y-%m-%d")
+        if ds in holiday_dates:
+            anchors[ds] = {"score": 60, "name": holiday_dates[ds]}
+        else:
+            for (eday, ename, etier) in LONDON_EVENTS.get(month, []):
+                if eday == day:
+                    anchors[ds] = {
+                        "score": 55 if etier == "high" else 25,
+                        "name":  ename
+                    }
+    return anchors
+
+def _detect_cluster(d: date, holiday_dates: dict) -> dict:
     """
-    Classify a single date with full bridge day + long weekend logic.
-
-    Patterns handled:
-      - Bank holiday on any day → high (+40%)
-      - Mon holiday → Fri-Mon long weekend, Fri/Sat/Sun all high (+45%)
-      - Fri holiday → Fri-Sun long weekend, all high (+45%)
-      - Thu holiday → Thu-Sun, Fri is bridge day → all high (+50%)
-      - Mon+Thu holidays same week → Thu-Mon 5-day, Fri bridge → all high (+60%)
-      - Regular Sat/Sun → medium (+15%)
-      - Sat/Sun adjacent to any of the above → escalated automatically
+    Detect what kind of extended weekend cluster this date belongs to.
+    Returns cluster info: type, span_dates, peak_score
+    
+    Cluster types:
+      "none"     - standalone day
+      "weekend"  - regular Sat/Sun
+      "3day"     - Mon or Fri holiday → 3-day weekend
+      "4day"     - Thu holiday (bridge Fri) OR Tue holiday (bridge Mon)
+      "5day"     - Thu + Mon holidays
     """
-    date_str = d.strftime("%Y-%m-%d")
-    weekday  = d.weekday()  # 0=Mon … 6=Sun
+    wd = d.weekday()  # 0=Mon … 6=Sun
 
-    events    = []
-    tier      = "normal"
-    surge_pct = 0
-    tags      = []
+    def ds(delta):
+        return (d + timedelta(days=delta)).strftime("%Y-%m-%d")
 
-    # ── Step 1: Direct bank holiday ──────────────────────────────────────────
-    if date_str in holiday_dates:
-        events.append(holiday_dates[date_str])
-        tier      = "high"
-        surge_pct = 40
+    def is_hol(delta):
+        return ds(delta) in holiday_dates
 
-    # ── Step 2: London curated events ────────────────────────────────────────
-    for (eday, ename, etier) in month_events:
-        if eday == d.day:
-            events.append(ename)
-            if etier == "high":
-                tier      = "high"
-                surge_pct = max(surge_pct, 35)
-            elif etier == "medium" and tier == "normal":
-                tier      = "medium"
-                surge_pct = max(surge_pct, 18)
+    # Find the Saturday of this week (or next)
+    days_to_sat = (5 - wd) % 7
+    sat = d + timedelta(days=days_to_sat)
+    sun = sat + timedelta(days=1)
+    mon = sat + timedelta(days=2)
+    fri = sat - timedelta(days=1)
+    thu = sat - timedelta(days=2)
+    tue = sat + timedelta(days=3)
 
-    # ── Step 3: Bridge day & long weekend detection ──────────────────────────
-    # Helper: get surrounding dates
-    def ds(delta): return (d + timedelta(days=delta)).strftime("%Y-%m-%d")
+    sat_ds = sat.strftime("%Y-%m-%d")
+    sun_ds = sun.strftime("%Y-%m-%d")
+    mon_ds = mon.strftime("%Y-%m-%d")
+    fri_ds = fri.strftime("%Y-%m-%d")
+    thu_ds = thu.strftime("%Y-%m-%d")
+    tue_ds = tue.strftime("%Y-%m-%d")
+    d_ds   = d.strftime("%Y-%m-%d")
 
-    is_bridge    = False
-    long_weekend = False
-    span_days    = 0  # how many days in the extended weekend
+    mon_hol = mon_ds in holiday_dates
+    fri_hol = fri_ds in holiday_dates
+    thu_hol = thu_ds in holiday_dates
+    tue_hol = tue_ds in holiday_dates
 
-    if weekday == 0:  # Monday
-        # Mon holiday → Sat-Mon = 3-day (already covered by holiday check)
-        # Mon holiday + Thu holiday same week → Thu-Mon 5-day
-        thu = ds(3)
-        if date_str in holiday_dates:
-            long_weekend = True
-            span_days    = 3
-            if thu in holiday_dates:
-                span_days = 5
-                tags.append("5-Day Weekend")
-            else:
-                tags.append("Long Weekend")
+    # 5-day: Thu holiday + Mon holiday
+    if thu_hol and mon_hol:
+        cluster_dates = {thu_ds, fri_ds, sat_ds, sun_ds, mon_ds}
+        if d_ds in cluster_dates:
+            return {"type": "5day", "dates": cluster_dates,
+                    "label": "5-Day Weekend", "peak": 60}
 
-    elif weekday == 1:  # Tuesday
-        # Tue holiday → Mon is bridge → Sat-Tue = 4-day
-        mon = ds(-1)
-        if date_str in holiday_dates and mon not in holiday_dates:
-            is_bridge    = True   # Mon becomes bridge
-            long_weekend = True
-            span_days    = 4
-            tags.append("Bridge Weekend (Mon bridge)")
+    # 4-day: Thu holiday (Fri is bridge)
+    if thu_hol and not mon_hol:
+        cluster_dates = {thu_ds, fri_ds, sat_ds, sun_ds}
+        if d_ds in cluster_dates:
+            return {"type": "4day", "dates": cluster_dates,
+                    "label": "4-Day Weekend (Thu holiday)", "peak": 50}
 
-    elif weekday == 3:  # Thursday
-        # Thu holiday → Fri is bridge → Thu-Sun = 4-day
-        fri = ds(1)
-        mon = ds(4)
-        if date_str in holiday_dates:
-            long_weekend = True
-            if mon in holiday_dates:
-                span_days = 5
-                tags.append("5-Day Weekend (Thu+Mon holidays)")
-            else:
-                span_days = 4
-                tags.append("Bridge Weekend (Fri bridge)")
+    # 4-day: Tue holiday (Mon is bridge)
+    if tue_hol and not fri_hol:
+        cluster_dates = {sat_ds, sun_ds, mon_ds, tue_ds}
+        if d_ds in cluster_dates:
+            return {"type": "4day", "dates": cluster_dates,
+                    "label": "4-Day Weekend (Tue holiday)", "peak": 50}
 
-    elif weekday == 4:  # Friday
-        # Fri holiday → Fri-Sun = 3-day long weekend
-        # Fri is bridge if Thu was holiday
-        thu = ds(-1)
-        mon = ds(3)
-        if date_str in holiday_dates:
-            long_weekend = True
-            span_days    = 3
-            tags.append("Long Weekend")
-        elif thu in holiday_dates:
-            is_bridge    = True
-            long_weekend = True
-            span_days    = 4
-            tags.append("Bridge Day")
-            tier         = "high"
-            surge_pct    = max(surge_pct, 50)
-        if mon in holiday_dates:
-            long_weekend = True
-            span_days    = max(span_days, 4) if date_str in holiday_dates else 4
-            tags.append("Long Weekend (Mon holiday)")
-            tier         = "high"
-            surge_pct    = max(surge_pct, 45)
+    # 3-day: Mon holiday
+    if mon_hol and not thu_hol:
+        cluster_dates = {sat_ds, sun_ds, mon_ds}
+        if d_ds in cluster_dates:
+            return {"type": "3day", "dates": cluster_dates,
+                    "label": "Long Weekend (Mon holiday)", "peak": 45}
 
-    elif weekday == 5:  # Saturday
-        fri = ds(-1)
-        sun = ds(1)
-        mon = ds(2)
-        thu = ds(-2)
-        if mon in holiday_dates or fri in holiday_dates:
-            long_weekend = True
-            span_days    = 3
-            tags.append("Long Weekend")
-            tier         = "high"
-            surge_pct    = max(surge_pct, 40)
-        if thu in holiday_dates:  # Thu holiday → bridge Fri → Thu-Sun
-            long_weekend = True
-            span_days    = 4
-            tags.append("Extended Weekend")
-            tier         = "high"
-            surge_pct    = max(surge_pct, 48)
-        if mon in holiday_dates and thu in holiday_dates:
-            span_days    = 5
-            tags.append("5-Day Weekend")
-            surge_pct    = max(surge_pct, 58)
+    # 3-day: Fri holiday
+    if fri_hol and not tue_hol:
+        cluster_dates = {fri_ds, sat_ds, sun_ds}
+        if d_ds in cluster_dates:
+            return {"type": "3day", "dates": cluster_dates,
+                    "label": "Long Weekend (Fri holiday)", "peak": 45}
 
-    elif weekday == 6:  # Sunday
-        mon = ds(1)
-        fri = ds(-2)
-        thu = ds(-3)
-        if mon in holiday_dates or fri in holiday_dates:
-            long_weekend = True
-            span_days    = 3
-            tags.append("Long Weekend")
-            tier         = "high"
-            surge_pct    = max(surge_pct, 40)
-        if thu in holiday_dates:
-            long_weekend = True
-            span_days    = 4
-            tags.append("Extended Weekend")
-            tier         = "high"
-            surge_pct    = max(surge_pct, 48)
-        if mon in holiday_dates and thu in holiday_dates:
-            span_days    = 5
-            tags.append("5-Day Weekend")
-            surge_pct    = max(surge_pct, 58)
+    # Regular weekend
+    if d_ds in {sat_ds, sun_ds}:
+        return {"type": "weekend", "dates": {sat_ds, sun_ds},
+                "label": "", "peak": 15}
 
-    # ── Step 4: Span-based surge scaling ─────────────────────────────────────
-    if long_weekend and tier != "high":
-        tier = "high"
-    if span_days == 3 and not surge_pct:
-        surge_pct = 40
-    elif span_days == 4:
-        surge_pct = max(surge_pct, 50)
-    elif span_days >= 5:
-        surge_pct = max(surge_pct, 60)
+    return {"type": "none", "dates": set(), "label": "", "peak": 0}
 
-    # ── Step 5: Regular weekend fallback (Sat=5, Sun=6) ──────────────────────
-    if weekday in [5, 6] and tier == "normal":
-        tier      = "medium"
-        surge_pct = 15
-    elif weekday in [5, 6] and tier == "medium":
-        surge_pct = max(surge_pct, 20)
+def _surge_for_day(d: date, cluster: dict, holiday_dates: dict) -> tuple:
+    """
+    Returns (surge_pct, tier) using bell curve centered on Sat/Sun.
+    
+    The curve shape per cluster type:
+    
+    weekend:          Sat+15%  Sun+15%
+    3day (Mon hol):   Sat+45%  Sun+45%  Mon+35%
+    3day (Fri hol):   Fri+35%  Sat+45%  Sun+45%
+    4day (Thu hol):   Thu+35%  Fri+45%  Sat+50%  Sun+45%  (Mon plain)  — wait Mon not in 4day
+                      Actually: Thu+35% Fri+45% Sat+50% Sun+45%
+    4day (Tue hol):   Sat+45%  Sun+50%  Mon+45%  Tue+35%
+    5day:             Thu+40%  Fri+50%  Sat+60%  Sun+60%  Mon+50%  Tue+40%
+    """
+    wd    = d.weekday()
+    d_ds  = d.strftime("%Y-%m-%d")
+    ctype = cluster["type"]
 
-    return {
-        "date":      date_str,
-        "day":       d.day,
-        "weekday":   d.strftime("%a"),
-        "tier":      tier,
-        "surge_pct": surge_pct,
-        "events":    events,
-        "tags":      tags,
-        "is_bridge": is_bridge,
-        "span_days": span_days,
+    if ctype == "none":
+        return 0, "normal"
+
+    if ctype == "weekend":
+        return 15, "medium"
+
+    # Find Sat of this cluster's week
+    days_to_sat = (5 - wd) % 7
+    sat = d + timedelta(days=days_to_sat)
+    sun = sat + timedelta(days=1)
+
+    sat_ds = sat.strftime("%Y-%m-%d")
+    sun_ds = sun.strftime("%Y-%m-%d")
+    mon_ds = (sat + timedelta(days=2)).strftime("%Y-%m-%d")
+    fri_ds = (sat - timedelta(days=1)).strftime("%Y-%m-%d")
+    thu_ds = (sat - timedelta(days=2)).strftime("%Y-%m-%d")
+    tue_ds = (sat + timedelta(days=3)).strftime("%Y-%m-%d")
+
+    # Bell curve lookup tables
+    curves = {
+        # 3-day Mon holiday: Sat peak, Sun peak, Mon shoulder
+        "3day_mon": {sat_ds: 45, sun_ds: 45, mon_ds: 35},
+        # 3-day Fri holiday: Fri shoulder, Sat peak, Sun peak
+        "3day_fri": {fri_ds: 35, sat_ds: 45, sun_ds: 45},
+        # 4-day Thu holiday: Thu shoulder, Fri ramp, Sat peak, Sun ramp-down
+        "4day_thu": {thu_ds: 35, fri_ds: 45, sat_ds: 50, sun_ds: 45},
+        # 4-day Tue holiday: Sat ramp, Sun peak, Mon ramp-down, Tue shoulder
+        "4day_tue": {sat_ds: 45, sun_ds: 50, mon_ds: 45, tue_ds: 35},
+        # 5-day: full bell Thu→Tue
+        "5day":     {thu_ds: 40, fri_ds: 50, sat_ds: 60, sun_ds: 60, mon_ds: 50, tue_ds: 40},
     }
+
+    # Determine which curve to use
+    if ctype == "5day":
+        curve = curves["5day"]
+    elif ctype == "4day":
+        if thu_ds in cluster["dates"]:
+            curve = curves["4day_thu"]
+        else:
+            curve = curves["4day_tue"]
+    elif ctype == "3day":
+        if mon_ds in cluster["dates"]:
+            curve = curves["3day_mon"]
+        else:
+            curve = curves["3day_fri"]
+    else:
+        curve = {}
+
+    surge_pct = curve.get(d_ds, 0)
+
+    # Fallback: if somehow not in curve but in cluster, give minimum
+    if surge_pct == 0 and d_ds in cluster["dates"]:
+        surge_pct = 20
+
+    # Tier
+    if surge_pct >= 45:
+        tier = "high"
+    elif surge_pct >= 20:
+        tier = "medium"
+    else:
+        tier = "normal"
+
+    return surge_pct, tier
 
 @router.get("/holidays")
 async def get_holidays(year: int = Query(2026)):
@@ -247,24 +258,55 @@ async def get_surge_calendar(
     year:         int = Query(2026),
     month:        int = Query(...),
 ):
-    holidays     = await fetch_uk_holidays(year)
-    # Include adjacent months' holidays for edge detection (e.g. Dec 31 → Jan 1)
-    prev_year    = year if month > 1 else year - 1
-    next_year    = year if month < 12 else year + 1
-    prev_month_h = await fetch_uk_holidays(prev_year)
-    next_month_h = await fetch_uk_holidays(next_year)
+    holidays = await fetch_uk_holidays(year)
+    prev_h   = await fetch_uk_holidays(year - 1)
+    next_h   = await fetch_uk_holidays(year + 1)
+    holiday_dates = {h["date"]: h["name"] for h in holidays + prev_h + next_h}
 
-    all_holidays  = holidays + prev_month_h + next_month_h
-    holiday_dates = {h["date"]: h["name"] for h in all_holidays}
-
-    month_events  = LONDON_EVENTS.get(month, [])
     days_in_month = calendar.monthrange(year, month)[1]
+    result        = []
 
-    result = []
     for day in range(1, days_in_month + 1):
-        d    = date(year, month, day)
-        info = _classify_day(d, holiday_dates, month_events)
-        result.append(info)
+        d        = date(year, month, day)
+        date_str = d.strftime("%Y-%m-%d")
+
+        cluster   = _detect_cluster(d, holiday_dates)
+        surge_pct, tier = _surge_for_day(d, cluster, holiday_dates)
+
+        # Curated London events can bump up independently
+        events = []
+        if date_str in holiday_dates:
+            events.append(holiday_dates[date_str])
+
+        for (eday, ename, etier) in LONDON_EVENTS.get(month, []):
+            if eday == day:
+                events.append(ename)
+                if etier == "high" and surge_pct < 35:
+                    surge_pct = 35
+                    tier = "high"
+                elif etier == "medium" and surge_pct < 18:
+                    surge_pct = 18
+                    tier = "medium"
+
+        tags = []
+        if cluster["label"]:
+            tags.append(cluster["label"])
+        if cluster["type"] in ["4day", "5day"]:
+            days_to_sat = (5 - d.weekday()) % 7
+            fri_ds = (d + timedelta(days=days_to_sat - 1)).strftime("%Y-%m-%d")
+            if date_str == fri_ds and date_str not in holiday_dates:
+                tags.append("Bridge Day")
+
+        result.append({
+            "date":       date_str,
+            "day":        day,
+            "weekday":    d.strftime("%a"),
+            "tier":       tier,
+            "surge_pct":  surge_pct,
+            "events":     events,
+            "tags":       tags,
+            "cluster":    cluster["type"],
+        })
 
     return {
         "neighborhood": neighborhood,
