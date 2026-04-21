@@ -173,7 +173,8 @@ export default function SurgeHeatmap({ neighborhood }) {
                 <p className="font-bold mb-1">
                   {tooltip.day.weekday} {tooltip.day.day} {monthName}
                 </p>
-                {tooltip.day.events.length > 0
+                {tooltip.day.tags?.length > 0 && tooltip.day.tags.map((t, i) => (<p key={'t'+i} className="text-purple-300 font-bold">🌉 {t}</p>))}
+                  {tooltip.day.events.length > 0
                   ? tooltip.day.events.map((e, i) => (
                       <p key={i} className="text-gray-300">🎉 {e}</p>
                     ))
