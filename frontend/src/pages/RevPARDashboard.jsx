@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import MetricCard from "../components/dashboard/MetricCard";
 import RevPARChart from "../components/market/RevPARChart";
+import SurgeHeatmap from '../components/market/SurgeHeatmap';
 import RevPAROptimizer from "../components/market/RevPAROptimizer";
 import {
   getNeighborhoods,
@@ -171,6 +172,9 @@ const RevPARDashboard = () => {
 
           {/* Trend Chart */}
           <RevPARChart trend={trend?.trend} />
+
+          {/* Surge Heatmap */}
+          <SurgeHeatmap neighborhood={selected} />
 
         </div>
       )}
