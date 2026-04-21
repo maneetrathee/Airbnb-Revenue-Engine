@@ -235,3 +235,74 @@ def save_property_sync(property_id: int, settings: PropertySyncIn):
         })
 
     return {"success": True}
+
+# ── Price Overrides ───────────────────────────────────────────────────────────
+class PriceOverrideIn(BaseModel):
+    listing_id: int
+    override_date: str
+    custom_price: float
+    reason: Optional[str] = ""
+
+def ensure_overrides_table():
+    with engine.begin() as conn:
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS price_overrides (
+                id            SERIAL PRIMARY KEY,
+                listing_id    BIGINT REFERENCES listings(id),
+                override_date DATE NOT NULL,
+                custom_price  NUMERIC(10,2) NOT NULL,
+                reason        TEXT,
+                created_at    TIMESTAMPTZ DEFAULT NOW(),
+                UNIQUE(listing_id, override_date)
+            );
+        """))
+
+ensure_overrides_table()
+
+@router.get("/{property_id}/overrides")
+def get_overrides(property_id: int):
+    with engine.connect() as conn:
+        rows = conn.execute(text("""
+            SELECT id, listing_id, override_date, custom_price, reason
+            FROM price_overrides
+            WHERE listing_id = :pid
+            ORDER BY override_date ASC
+        """), {"pid": property_id}).fetchall()
+    return {"overrides": [
+        {
+            "id": r.id,
+            "listing_id": r.listing_id,
+            "override_date": str(r.override_date),
+            "custom_price": float(r.custom_price),
+            "reason": r.reason or ""
+        } for r in rows
+    ]}
+
+@router.post("/{property_id}/overrides")
+def set_override(property_id: int, override: PriceOverrideIn):
+    with engine.begin() as conn:
+        conn.execute(text("""
+            INSERT INTO price_overrides (listing_id, override_date, custom_price, reason)
+            VALUES (:lid, :date, :price, :reason)
+            ON CONFLICT (listing_id, override_date) DO UPDATE SET
+                custom_price = EXCLUDED.custom_price,
+                reason = EXCLUDED.reason
+        """), {
+            "lid": property_id,
+            "date": override.override_date,
+            "price": override.custom_price,
+            "reason": override.reason
+        })
+    return {"success": True}
+
+@router.delete("/{property_id}/overrides/{override_id}")
+def delete_override(property_id: int, override_id: int):
+    with engine.begin() as conn:
+        result = conn.execute(text("""
+            DELETE FROM price_overrides
+            WHERE id = :oid AND listing_id = :pid
+            RETURNING id
+        """), {"oid": override_id, "pid": property_id})
+        if not result.fetchone():
+            raise HTTPException(status_code=404, detail="Override not found")
+    return {"success": True}
