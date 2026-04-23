@@ -1,7 +1,7 @@
 """
-Events & Holiday Surge API — v5
-Bell curve centered on Sat/Sun. Clusters detected by scanning fixed
-Mon/Fri/Thu/Tue around each week's anchor Saturday.
+Events & Holiday Surge API — v6
+Bell curve centered on Sat/Sun.
+Special handling for multi-day holiday clusters (Easter etc).
 """
 
 from fastapi import APIRouter, Query
@@ -15,7 +15,7 @@ LONDON_EVENTS = {
     1:  [(1,  "New Year's Day",            "high")],
     2:  [(14, "Valentine's Day",           "medium")],
     3:  [(17, "St Patrick's Day Parade",   "medium")],
-    4:  [(1,  "Easter Weekend",            "high"),
+    4:  [(1,  "Easter Weekend",           "high"),
          (20, "London Marathon",           "high")],
     5:  [(25, "Chelsea Flower Show",       "medium")],
     6:  [(14, "Trooping the Colour",       "high"),
@@ -37,7 +37,6 @@ LONDON_EVENTS = {
          (31, "New Year's Eve",            "high")],
 }
 
-# Confirmed England & Wales bank holidays per year
 HARDCODED_HOLIDAYS = {
     2025: [
         {"date": "2025-01-01", "name": "New Year's Day"},
@@ -82,41 +81,41 @@ async def fetch_uk_holidays(year: int) -> list:
             resp = await client.get(url)
             if resp.status_code == 200:
                 data = resp.json()
-                if data:  # Only use if non-empty
-                    return [
+                if data:
+                    parsed = [
                         {
-                            "date": h["startDate"],
+                            "date": h["startDate"][:10],
                             "name": h["name"][0]["text"] if h.get("name") else "Bank Holiday",
                         }
                         for h in data
                         if h.get("startDate", "").startswith(str(year))
                     ]
+                    if parsed:
+                        return parsed
     except Exception:
         pass
-    # Always fall back to hardcoded if API empty or fails
     return HARDCODED_HOLIDAYS.get(year, HARDCODED_HOLIDAYS[2026])
 
 
 def _sat_of_week(d: date) -> date:
-    """Return the Saturday of the weekend containing d.
-    Mon-Sat → that week's Saturday
-    Sun     → previous Saturday (same weekend)
-    """
-    wd = d.weekday()  # Mon=0 … Sun=6
-    if wd == 6:       # Sunday → go back 1 day to Saturday
+    """Saturday of the weekend containing d. Sunday maps to previous Saturday."""
+    wd = d.weekday()
+    if wd == 6:
         return d - timedelta(days=1)
     return d + timedelta(days=(5 - wd))
 
 
 def _classify_week(sat: date, holiday_dates: dict) -> dict:
     """
-    Given a Saturday, classify the extended weekend type and return
-    a surge curve mapping date_str → surge_pct.
+    Given a Saturday, return the surge curve for that weekend cluster.
+    Handles: regular, 3-day (Mon/Fri), 4-day (Thu/Tue), 5-day (Thu+Mon),
+    and Easter-style multi-holiday clusters (Fri+Mon, Wed+Fri+Mon etc).
     """
     sun = sat + timedelta(days=1)
     mon = sat + timedelta(days=2)
     fri = sat - timedelta(days=1)
     thu = sat - timedelta(days=2)
+    wed = sat - timedelta(days=3)
     tue = sat + timedelta(days=3)
 
     def ds(d): return d.strftime("%Y-%m-%d")
@@ -124,9 +123,36 @@ def _classify_week(sat: date, holiday_dates: dict) -> dict:
     mon_hol = ds(mon) in holiday_dates
     fri_hol = ds(fri) in holiday_dates
     thu_hol = ds(thu) in holiday_dates
+    wed_hol = ds(wed) in holiday_dates
     tue_hol = ds(tue) in holiday_dates
 
-    # 5-day: Thu + Mon holidays
+    # ── Easter-style: Wed/Thu holiday + Fri holiday + Mon holiday ────────────
+    # e.g. Easter 2026: Wed Apr 1 (event) + Fri Apr 3 (Good Friday) + Mon Apr 6
+    # Full bell: Wed+30% Thu+35% Fri+45% Sat+55% Sun+55% Mon+45%
+    if fri_hol and mon_hol and (wed_hol or thu_hol):
+        curve = {
+            ds(sat): 55, ds(sun): 55,
+            ds(fri): 45, ds(mon): 45,
+        }
+        if thu_hol:
+            curve[ds(thu)] = 35
+        if wed_hol:
+            curve[ds(wed)] = 30
+            if thu_hol:
+                curve[ds(thu)] = 35
+        return {"type": "easter", "label": "Easter Weekend", "curve": curve}
+
+    # ── Fri + Mon holidays (standard 4-day Easter without midweek) ───────────
+    if fri_hol and mon_hol:
+        return {
+            "type": "fri_mon", "label": "Easter Weekend",
+            "curve": {
+                ds(fri): 40, ds(sat): 55,
+                ds(sun): 55, ds(mon): 40,
+            },
+        }
+
+    # ── 5-day: Thu + Mon holidays ────────────────────────────────────────────
     if thu_hol and mon_hol:
         return {
             "type": "5day", "label": "5-Day Weekend",
@@ -137,7 +163,7 @@ def _classify_week(sat: date, holiday_dates: dict) -> dict:
             },
         }
 
-    # 4-day: Thu holiday → Fri bridge
+    # ── 4-day: Thu holiday → Fri bridge ──────────────────────────────────────
     if thu_hol:
         return {
             "type": "4day_thu", "label": "4-Day Weekend",
@@ -147,7 +173,7 @@ def _classify_week(sat: date, holiday_dates: dict) -> dict:
             },
         }
 
-    # 4-day: Tue holiday → Mon bridge
+    # ── 4-day: Tue holiday → Mon bridge ──────────────────────────────────────
     if tue_hol:
         return {
             "type": "4day_tue", "label": "4-Day Weekend",
@@ -157,25 +183,21 @@ def _classify_week(sat: date, holiday_dates: dict) -> dict:
             },
         }
 
-    # 3-day: Mon holiday
+    # ── 3-day: Mon holiday ────────────────────────────────────────────────────
     if mon_hol:
         return {
             "type": "3day_mon", "label": "Long Weekend",
-            "curve": {
-                ds(sat): 45, ds(sun): 45, ds(mon): 35,
-            },
+            "curve": {ds(sat): 45, ds(sun): 45, ds(mon): 35},
         }
 
-    # 3-day: Fri holiday
+    # ── 3-day: Fri holiday ────────────────────────────────────────────────────
     if fri_hol:
         return {
             "type": "3day_fri", "label": "Long Weekend",
-            "curve": {
-                ds(fri): 35, ds(sat): 45, ds(sun): 45,
-            },
+            "curve": {ds(fri): 35, ds(sat): 45, ds(sun): 45},
         }
 
-    # Regular weekend
+    # ── Regular weekend ───────────────────────────────────────────────────────
     return {
         "type": "weekend", "label": "",
         "curve": {ds(sat): 15, ds(sun): 15},
@@ -194,14 +216,22 @@ async def get_surge_calendar(
     year:         int = Query(2026),
     month:        int = Query(...),
 ):
+    # Fetch holidays (live API with hardcoded fallback)
     h_cur  = await fetch_uk_holidays(year)
     h_prev = await fetch_uk_holidays(year - 1)
     h_next = await fetch_uk_holidays(year + 1)
     holiday_dates = {h["date"]: h["name"] for h in h_cur + h_prev + h_next}
 
+    # Add curated HIGH events as anchors for cluster detection
     days_in_month = calendar.monthrange(year, month)[1]
+    for day in range(1, days_in_month + 1):
+        for (eday, ename, etier) in LONDON_EVENTS.get(month, []):
+            if eday == day and etier == "high":
+                ds = date(year, month, day).strftime("%Y-%m-%d")
+                if ds not in holiday_dates:
+                    holiday_dates[ds] = ename
 
-    # Collect all Saturdays covering this month (+ spillover weeks)
+    # Collect all Saturdays covering this month + spillover
     saturdays = set()
     first = date(year, month, 1)
     last  = date(year, month, days_in_month)
@@ -215,10 +245,18 @@ async def get_surge_calendar(
     cluster_map = {}
     for sat in saturdays:
         week = _classify_week(sat, holiday_dates)
-        for ds, pct in week["curve"].items():
-            if ds not in surge_map or pct > surge_map[ds]:
-                surge_map[ds]   = pct
-                cluster_map[ds] = week
+        for date_str, pct in week["curve"].items():
+            if date_str not in surge_map or pct > surge_map[date_str]:
+                surge_map[date_str]   = pct
+                cluster_map[date_str] = week
+
+    # Second pass: any holiday/high-event not in a cluster gets direct surge
+    for day in range(1, days_in_month + 1):
+        d        = date(year, month, day)
+        date_str = d.strftime("%Y-%m-%d")
+        if date_str in holiday_dates and surge_map.get(date_str, 0) < 35:
+            surge_map[date_str]   = 35
+            cluster_map[date_str] = {"type": "holiday", "label": holiday_dates[date_str]}
 
     # Build result
     result = []
@@ -237,8 +275,8 @@ async def get_surge_calendar(
         for (eday, ename, etier) in LONDON_EVENTS.get(month, []):
             if eday == day and ename not in events:
                 events.append(ename)
-                if etier == "high"   and surge_pct < 35: surge_pct = 35
-                if etier == "medium" and surge_pct < 18: surge_pct = 18
+                if etier == "medium" and surge_pct < 18:
+                    surge_pct = 18
 
         # Tier
         if surge_pct >= 45:   tier = "high"
@@ -247,7 +285,7 @@ async def get_surge_calendar(
 
         # Tags
         tags = []
-        if cluster["label"]:
+        if cluster.get("label"):
             tags.append(cluster["label"])
         if cluster["type"] == "4day_thu" and wd == 4 and date_str not in holiday_dates:
             tags.append("Bridge Day")

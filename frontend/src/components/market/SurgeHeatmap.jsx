@@ -4,9 +4,9 @@ import { CalendarDays, ChevronLeft, ChevronRight, Flame, Loader2, TrendingUp } f
 const BASE_URL = import.meta.env.VITE_API_URL || "";
 
 const TIER_STYLES = {
-  high:   { bg: "bg-red-500",    text: "text-white",      dot: "bg-red-500",    label: "High Surge" },
-  medium: { bg: "bg-amber-400",  text: "text-white",      dot: "bg-amber-400",  label: "Med Surge"  },
-  normal: { bg: "bg-gray-50",    text: "text-gray-700",   dot: "bg-gray-200",   label: "Normal"     },
+  high:   { bg: "bg-violet-500",  text: "text-white", dot: "bg-violet-500", label: "High Surge (45%+)" },
+  medium: { bg: "bg-rose-500",    text: "text-white", dot: "bg-rose-500",   label: "Med Surge (15%+)" },
+  normal: { bg: "bg-gray-50",     text: "text-gray-700", dot: "bg-gray-200", label: "Normal" },
 };
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -91,23 +91,23 @@ export default function SurgeHeatmap({ neighborhood }) {
 
       {/* Stats bar */}
       {data && !loading && (
-        <div className="flex gap-3 mb-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 rounded-lg">
-            <div className="w-2 h-2 rounded-full bg-red-500" />
-            <span className="text-xs font-bold text-red-700">{highCount} high-surge days</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 rounded-lg">
-            <div className="w-2 h-2 rounded-full bg-amber-400" />
-            <span className="text-xs font-bold text-amber-700">{mediumCount} medium-surge days</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-lg">
-            <TrendingUp size={12} className="text-emerald-600" />
-            <span className="text-xs font-bold text-emerald-700">
-              {highCount + mediumCount} pricing opportunities
-            </span>
-          </div>
+      <div className="flex gap-3 mb-4">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-violet-50 rounded-lg">
+          <div className="w-2 h-2 rounded-full bg-violet-500" />
+          <span className="text-xs font-bold text-violet-700">{highCount} peak-surge days</span>
         </div>
-      )}
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50 rounded-lg">
+          <div className="w-2 h-2 rounded-full bg-rose-500" />
+            <span className="text-xs font-bold text-rose-700">{mediumCount} surge days</span>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-lg">
+          <TrendingUp size={12} className="text-emerald-600" />
+          <span className="text-xs font-bold text-emerald-700">
+            {highCount + mediumCount} pricing opportunities
+          </span>
+        </div>
+      </div>
+    )}
 
       {/* Loading */}
       {loading && (
