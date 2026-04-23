@@ -97,4 +97,5 @@ tzlocal==5.3.1
 urllib3==2.6.3
 uvicorn==0.39.0
 xgboost==2.1.4
-zipp==3.23.0httpx
+zipp==3.23.0
+httpx
