@@ -4,11 +4,11 @@ import { Target,
   Map,
   Settings,
   Building2,
-  TrendingUp,
+  TrendingUp, 
+  Brain,
+  Trophy
 } from "lucide-react";
-import { Target, Link, useLocation } from "react-router-dom";
-import { Target, Brain } from "lucide-react";
-import { Target, Trophy } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 
 const Sidebar = () => {
   const location = useLocation();

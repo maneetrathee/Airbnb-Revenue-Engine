@@ -196,4 +196,4 @@ def get_distribution(
         "total": len(prices),
         "min":   round(min_p),
         "max":   round(max_p),
-    
+    }
