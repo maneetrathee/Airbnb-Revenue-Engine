@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import PriceOverridesDrawer from "../components/dashboard/PriceOverridesDrawer";
+import ICalDrawer from "../components/dashboard/ICalDrawer";
 import {
   Building2,
   Plus,
@@ -21,6 +22,7 @@ import {
   CheckCircle,
   Sparkles,
   CalendarDays,
+  Link, 
 } from "lucide-react";
 
 const BASE_URL =
@@ -435,7 +437,7 @@ const PropertyModal = ({ property, neighborhoods, onClose, onSave }) => {
 
 // ── Property card ─────────────────────────────────────────────────────────────
 // CHANGE 1: Added onOverride to props
-const PropertyCard = ({ property, onEdit, onDelete, onSync, onOverride }) => {
+const PropertyCard = ({ property, onEdit, onDelete, onSync, onOverride, onIcal }) => {
   const sync = property.sync_settings;
 
   return (
@@ -497,7 +499,7 @@ const PropertyCard = ({ property, onEdit, onDelete, onSync, onOverride }) => {
           </div>
         )}
 
-        {/* CHANGE 2: Added Price Overrides button */}
+        {/* Price Overrides button */}
         <div className="flex gap-2 mb-2">
           <button
             onClick={() => onOverride(property)}
@@ -508,6 +510,16 @@ const PropertyCard = ({ property, onEdit, onDelete, onSync, onOverride }) => {
           </button>
         </div>
 
+        {/* iCal Button */}
+        <button
+          onClick={() => onIcal(property)}
+          className="w-full py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-1.5 mb-2"
+        >
+          <Link size={14} />
+          iCal Sync
+        </button>
+
+        {/* Action Buttons */}
         <div className="flex gap-2">
           <button
             onClick={() => onSync(property)}
@@ -548,6 +560,7 @@ export default function PropertiesPage() {
   const [syncProp, setSyncProp] = useState(null);
   // CHANGE 3: Added overrideProp state
   const [overrideProp, setOverrideProp] = useState(null);
+  const [icalProp, setIcalProp] = useState(null);
   const [toast, setToast] = useState(null);
 
   const showToast = (type, message) => {
@@ -726,6 +739,7 @@ export default function PropertiesPage() {
               onSync={(p) => setSyncProp(p)}
               // CHANGE 4: Pass onOverride handler
               onOverride={(p) => setOverrideProp(p)}
+              onIcal={(p) => setIcalProp(p)}
             />
           ))}
         </div>
@@ -741,6 +755,14 @@ export default function PropertiesPage() {
             setEditingProp(null);
           }}
           onSave={handleSaveProperty}
+        />
+      )}
+
+      {/* iCal Drawer */}
+      {icalProp && (
+        <ICalDrawer
+          property={icalProp}
+          onClose={() => setIcalProp(null)}
         />
       )}
 

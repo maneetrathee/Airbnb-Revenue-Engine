@@ -11,14 +11,18 @@ const TIER_STYLES = {
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export default function SurgeHeatmap({ neighborhood }) {
+export default function SurgeHeatmap({ neighborhood, propertyId }) {
   const now = new Date();
   const [year, setYear]   = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [data, setData]   = useState(null);
   const [loading, setLoading] = useState(false);
   const [tooltip, setTooltip] = useState(null); // { day, x, y }
+  
+  // NEW: Booked dates state
+  const [bookedDates, setBookedDates] = useState(new Set());
 
+  // Fetch Surge Data
   useEffect(() => {
     if (!neighborhood) return;
     setLoading(true);
@@ -27,6 +31,14 @@ export default function SurgeHeatmap({ neighborhood }) {
       .then(d => setData(d))
       .finally(() => setLoading(false));
   }, [neighborhood, year, month]);
+
+  // NEW: Fetch iCal Bookings
+  useEffect(() => {
+    if (!propertyId) return;
+    fetch(`${BASE_URL}/api/v1/ical/bookings/${propertyId}?year=${year}&month=${month}`)
+      .then(r => r.json())
+      .then(d => setBookedDates(new Set(d.booked_dates || [])));
+  }, [propertyId, year, month]);
 
   const prevMonth = () => {
     if (month === 1) { setMonth(12); setYear(y => y - 1); }
@@ -142,7 +154,7 @@ export default function SurgeHeatmap({ neighborhood }) {
               return (
                 <div
                   key={d.date}
-                  className={`relative aspect-square rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 hover:shadow-md ${s.bg} ${s.text}`}
+                  className={`relative aspect-square rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 hover:shadow-md overflow-hidden ${s.bg} ${s.text}`}
                   onMouseEnter={e => {
                     if (d.tier !== "normal" || d.events.length > 0) {
                       setTooltip({ day: d, rect: e.currentTarget.getBoundingClientRect() });
@@ -156,6 +168,13 @@ export default function SurgeHeatmap({ neighborhood }) {
                   )}
                   {d.events.length > 0 && (
                     <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-white opacity-80" />
+                  )}
+
+                  {/* NEW: Booked Overlay */}
+                  {bookedDates.has(d.date) && (
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center">
+                      <span className="text-white text-xs font-bold tracking-wider">BOOKED</span>
+                    </div>
                   )}
                 </div>
               );

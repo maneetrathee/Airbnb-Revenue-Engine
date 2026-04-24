@@ -36,3 +36,12 @@ CREATE INDEX idx_history_listing ON market_history(listing_id);
 
 -- Speeds up "Get me all listings in Westminster"
 CREATE INDEX idx_listings_neighborhood ON listings(neighborhood);
+CREATE TABLE IF NOT EXISTS ical_bookings (
+  id          SERIAL PRIMARY KEY,
+  property_id INTEGER REFERENCES properties(id) ON DELETE CASCADE,
+  start_date  DATE NOT NULL,
+  end_date    DATE NOT NULL,
+  summary     TEXT,
+  uid         TEXT,
+  synced_at   TIMESTAMPTZ DEFAULT NOW()
+);
