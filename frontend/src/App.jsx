@@ -9,6 +9,7 @@ import PropertiesPage from "./pages/PropertiesPage";
 import ArbitragePage from "./pages/ArbitragePage";
 import MLPredictionPage from "./pages/MLPredictionPage";
 import MLComparisonPage from "./pages/MLComparisonPage";
+import CompetitorDashboard from "./pages/CompetitorDashboard";
 
 const LoginPage = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 animate-in fade-in duration-500">
@@ -80,6 +81,9 @@ function App() {
                             path="/arbitrage"
                             element={<ArbitragePage />}
                           />
+                          
+                          <Route path="/competitors" element={<CompetitorDashboard />} />
+
                           <Route path="/settings" element={<SettingsPage />} />
                           <Route
                             path="/map"

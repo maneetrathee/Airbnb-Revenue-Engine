@@ -1,4 +1,4 @@
-import {
+import { Target,
   Home,
   LineChart,
   Map,
@@ -6,9 +6,9 @@ import {
   Building2,
   TrendingUp,
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
-import { Brain } from "lucide-react";
-import { Trophy } from "lucide-react";
+import { Target, Link, useLocation } from "react-router-dom";
+import { Target, Brain } from "lucide-react";
+import { Target, Trophy } from "lucide-react";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -17,6 +17,7 @@ const Sidebar = () => {
     { name: "Dashboard", path: "/", icon: Home },
     { name: "Market Intel", path: "/market", icon: LineChart },
     { name: "Arbitrage", path: "/arbitrage", icon: TrendingUp },
+    { name: "Competitors", path: "/competitors", icon: Target },
     { name: "Properties", path: "/properties", icon: Building2 },
     { name: "Property Map", path: "/map", icon: Map },
     { name: "Settings", path: "/settings", icon: Settings },

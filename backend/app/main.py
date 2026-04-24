@@ -219,6 +219,8 @@ def predict_price(description: str = Query(...)):
 from app.arbitrage import router as arbitrage_router
 from app.events import router as events_router
 from app.ical import router as ical_router
+from app.competitors import router as competitors_router
 app.include_router(arbitrage_router)
 app.include_router(events_router)
 app.include_router(ical_router)
+app.include_router(competitors_router)
