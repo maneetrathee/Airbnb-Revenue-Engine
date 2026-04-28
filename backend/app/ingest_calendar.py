@@ -23,7 +23,7 @@ def ingest_calendar():
     total_rows = 0
     
     # Create an iterator to read the file in parts
-    chunk_iterator = pd.read_csv(file_path, compression='gzip', chunksize=chunk_size)
+    chunk_iterator = pd.read_csv(file_path, compression='gzip', chunksize=chunk_size, nrows=300000)
     
     for i, chunk in enumerate(chunk_iterator):
         # 1. CLEANING

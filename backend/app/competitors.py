@@ -201,27 +201,12 @@ def get_distribution(
 
 @router.get("/map-data")
 def get_map_data():
-    """Returns RevPAR, occupancy, avg price per neighbourhood for choropleth map."""
     with engine.connect() as conn:
         rows = conn.execute(text("""
-            SELECT
-                l.neighborhood,
-                COUNT(DISTINCT l.id)                        AS listing_count,
-                ROUND(AVG(l.price_base)::numeric, 2)        AS avg_price,
-                ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP
-                    (ORDER BY l.price_base)::numeric, 2)    AS median_price,
-                ROUND(AVG(mm.occupancy_rate)::numeric, 1)   AS avg_occupancy,
-                ROUND(AVG(
-                    mm.estimated_revenue /
-                    NULLIF(mm.total_days, 0) *
-                    (mm.occupancy_rate / 100.0)
-                )::numeric, 2)                              AS avg_revpar
-            FROM listings l
-            LEFT JOIN monthly_metrics mm ON mm.listing_id = l.id
-            WHERE l.neighborhood IS NOT NULL
-              AND l.price_base > 0
-            GROUP BY l.neighborhood
-            HAVING COUNT(DISTINCT l.id) >= 10
+            SELECT neighborhood, listing_count, avg_price, median_price,
+                   COALESCE(avg_occupancy, 0) as avg_occupancy,
+                   COALESCE(avg_revpar, 0) as avg_revpar
+            FROM neighbourhood_stats
             ORDER BY avg_revpar DESC NULLS LAST
         """)).fetchall()
 
@@ -237,10 +222,19 @@ def get_map_data():
         for r in rows
     ]
 
-    # Normalise revpar to 0–1 for colour scale
-    revpars  = [d["avg_revpar"] for d in data if d["avg_revpar"] > 0]
-    max_rev  = max(revpars) if revpars else 1
-    min_rev  = min(revpars) if revpars else 0
+    revpars  = sorted([d["avg_revpar"] for d in data if d["avg_revpar"] > 0])
+    if revpars:
+        # Use 95th percentile as max to prevent outliers skewing the colour scale
+        p95_idx  = int(len(revpars) * 0.95)
+        max_rev  = revpars[min(p95_idx, len(revpars) - 1)]
+        min_rev  = revpars[0]
+    else:
+        max_rev, min_rev = 1, 0
+
+    for d in data:
+        # Cap norm at 1.0 so outliers just show as darkest colour
+        raw_norm = (d["avg_revpar"] - min_rev) / (max_rev - min_rev) if max_rev > min_rev else 0
+        d["revpar_norm"] = round(min(raw_norm, 1.0), 3)
 
     for d in data:
         d["revpar_norm"] = round(
