@@ -10,6 +10,7 @@ import ArbitragePage from "./pages/ArbitragePage";
 import MLPredictionPage from "./pages/MLPredictionPage";
 import MLComparisonPage from "./pages/MLComparisonPage";
 import PropertyMapPage from "./pages/PropertyMapPage";
+import SentimentPage from "./pages/SentimentPage";
 import CompetitorDashboard from "./pages/CompetitorDashboard";
 
 const LoginPage = () => (
@@ -97,6 +98,10 @@ function App() {
                                 404 - Page Not Found
                               </div>
                             }
+                          />
+                          <Route
+                            path="/sentiment"
+                            element={<SentimentPage />}
                           />
                         </Routes>
                       </DashboardLayout>

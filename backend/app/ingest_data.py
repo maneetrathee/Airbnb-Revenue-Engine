@@ -9,7 +9,6 @@ engine = create_engine(DB_URL)
 
 def ingest_listings():
     file_path = 'data/listings.csv'
-    
     if not os.path.exists(file_path):
         print(f" Error: {file_path} not found.")
         return
@@ -24,27 +23,37 @@ def ingest_listings():
         df['price'] = pd.to_numeric(df['price'], errors='coerce')
 
     rename_map = {
-        'id': 'id',
-        'name': 'name',
-        'neighbourhood_cleansed': 'neighborhood',
-        'room_type': 'room_type',
-        'price': 'price_base',
-        'reviews_per_month': 'reviews_per_month'
+        'id':                        'id',
+        'name':                      'name',
+        'neighbourhood_cleansed':    'neighborhood',
+        'room_type':                 'room_type',
+        'price':                     'price_base',
+        'reviews_per_month':         'reviews_per_month',
+        'review_scores_rating':      'review_scores_rating',
+        'review_scores_accuracy':    'review_scores_accuracy',
+        'review_scores_cleanliness': 'review_scores_cleanliness',
+        'review_scores_checkin':     'review_scores_checkin',
+        'review_scores_communication':'review_scores_communication',
+        'review_scores_location':    'review_scores_location',
+        'review_scores_value':       'review_scores_value',
+        'number_of_reviews':         'number_of_reviews',
+        'description':               'description',
     }
 
-    df_final = df[list(rename_map.keys())].rename(columns=rename_map)
+    # Only keep columns that exist in CSV
+    available = {k: v for k, v in rename_map.items() if k in df.columns}
+    df_final  = df[list(available.keys())].rename(columns=available)
+
     print(" Data mapping complete. First 3 rows:")
-    print(df_final.head(3))
+    print(df_final[['id','name','neighborhood','price_base']].head(3))
 
     try:
         print(" Sending to Database (upsert mode)...")
         with engine.begin() as conn:
             conn.execute(text("TRUNCATE listings CASCADE"))
             print(" Table cleared.")
-
         df_final.to_sql('listings', engine, if_exists='append', index=False, method='multi', chunksize=500)
         print(f" SUCCESS! Ingested {len(df_final)} listings into PostgreSQL.")
-
     except Exception as e:
         print(f" Database Error: {e}")
 

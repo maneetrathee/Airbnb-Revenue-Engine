@@ -1,4 +1,4 @@
-import { Target,
+import { Target, MessageSquare,
   Home,
   LineChart,
   Map,
@@ -18,6 +18,7 @@ const Sidebar = () => {
     { name: "Market Intel", path: "/market", icon: LineChart },
     { name: "Arbitrage", path: "/arbitrage", icon: TrendingUp },
     { name: "Competitors", path: "/competitors", icon: Target },
+    { name: "Sentiment", path: "/sentiment", icon: MessageSquare },
     { name: "Properties", path: "/properties", icon: Building2 },
     { name: "Property Map", path: "/map", icon: Map },
     { name: "Settings", path: "/settings", icon: Settings },
