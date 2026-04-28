@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { SignedIn, SignedOut, SignIn } from "@clerk/clerk-react";
 import DashboardLayout from "./components/layout/DashboardLayout";
+import InstallPrompt from "./components/layout/InstallPrompt";
 import PricingDashboard from "./pages/PricingDashboard";
 import Onboarding from "./pages/Onboarding";
 import RevPARDashboard from "./pages/RevPARDashboard";
@@ -113,6 +114,7 @@ function App() {
           }
         />
       </Routes>
+    <InstallPrompt />
     </Router>
   );
 }
