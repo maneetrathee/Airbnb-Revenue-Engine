@@ -9,6 +9,7 @@ import PropertiesPage from "./pages/PropertiesPage";
 import ArbitragePage from "./pages/ArbitragePage";
 import MLPredictionPage from "./pages/MLPredictionPage";
 import MLComparisonPage from "./pages/MLComparisonPage";
+import PropertyMapPage from "./pages/PropertyMapPage";
 import CompetitorDashboard from "./pages/CompetitorDashboard";
 
 const LoginPage = () => (
@@ -81,18 +82,14 @@ function App() {
                             path="/arbitrage"
                             element={<ArbitragePage />}
                           />
-                          
-                          <Route path="/competitors" element={<CompetitorDashboard />} />
+
+                          <Route
+                            path="/competitors"
+                            element={<CompetitorDashboard />}
+                          />
 
                           <Route path="/settings" element={<SettingsPage />} />
-                          <Route
-                            path="/map"
-                            element={
-                              <div className="flex items-center justify-center h-96 text-gray-400 text-xl font-medium">
-                                Property Map (Coming Soon...)
-                              </div>
-                            }
-                          />
+                          <Route path="/map" element={<PropertyMapPage />} />
                           <Route
                             path="*"
                             element={

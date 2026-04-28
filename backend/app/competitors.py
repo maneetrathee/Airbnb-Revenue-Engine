@@ -126,7 +126,7 @@ def get_listings(
     with engine.connect() as conn:
         rows = conn.execute(text(f"""
             SELECT
-                id, name, price_base, bedrooms, room_type,
+                id, name, price_base, room_type,
                 reviews_per_month,
                 ROUND(
                     LEAST(COALESCE(reviews_per_month,0)*2, 20) / 30.0 * 100,
@@ -146,7 +146,7 @@ def get_listings(
                 "id":              r.id,
                 "name":            r.name,
                 "price":           float(r.price_base),
-                "bedrooms":        r.bedrooms,
+                
                 "reviews_per_month": float(r.reviews_per_month) if r.reviews_per_month else 0,
                 "est_occupancy":   float(r.est_occupancy or 0),
                 "airbnb_url":      f"https://www.airbnb.com/rooms/{r.id}",
@@ -197,3 +197,54 @@ def get_distribution(
         "min":   round(min_p),
         "max":   round(max_p),
     }
+
+
+@router.get("/map-data")
+def get_map_data():
+    """Returns RevPAR, occupancy, avg price per neighbourhood for choropleth map."""
+    with engine.connect() as conn:
+        rows = conn.execute(text("""
+            SELECT
+                l.neighborhood,
+                COUNT(DISTINCT l.id)                        AS listing_count,
+                ROUND(AVG(l.price_base)::numeric, 2)        AS avg_price,
+                ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP
+                    (ORDER BY l.price_base)::numeric, 2)    AS median_price,
+                ROUND(AVG(mm.occupancy_rate)::numeric, 1)   AS avg_occupancy,
+                ROUND(AVG(
+                    mm.estimated_revenue /
+                    NULLIF(mm.total_days, 0) *
+                    (mm.occupancy_rate / 100.0)
+                )::numeric, 2)                              AS avg_revpar
+            FROM listings l
+            LEFT JOIN monthly_metrics mm ON mm.listing_id = l.id
+            WHERE l.neighborhood IS NOT NULL
+              AND l.price_base > 0
+            GROUP BY l.neighborhood
+            HAVING COUNT(DISTINCT l.id) >= 10
+            ORDER BY avg_revpar DESC NULLS LAST
+        """)).fetchall()
+
+    data = [
+        {
+            "neighbourhood": r.neighborhood,
+            "listing_count":  int(r.listing_count),
+            "avg_price":      float(r.avg_price or 0),
+            "median_price":   float(r.median_price or 0),
+            "avg_occupancy":  float(r.avg_occupancy or 0),
+            "avg_revpar":     float(r.avg_revpar or 0),
+        }
+        for r in rows
+    ]
+
+    # Normalise revpar to 0–1 for colour scale
+    revpars  = [d["avg_revpar"] for d in data if d["avg_revpar"] > 0]
+    max_rev  = max(revpars) if revpars else 1
+    min_rev  = min(revpars) if revpars else 0
+
+    for d in data:
+        d["revpar_norm"] = round(
+            (d["avg_revpar"] - min_rev) / (max_rev - min_rev), 3
+        ) if max_rev > min_rev else 0
+
+    return {"neighbourhoods": data, "max_revpar": max_rev, "min_revpar": min_rev}
