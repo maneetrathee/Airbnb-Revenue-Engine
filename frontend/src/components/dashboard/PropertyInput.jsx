@@ -27,7 +27,7 @@ const PropertyInput = ({ value, onChange, onSubmit, loading }) => {
         </p>
         <button
           onClick={onSubmit}
-          disabled={loading || !value.trim()}
+          disabled={loading || !value || !value.trim()}
           className="flex items-center gap-2 bg-brand hover:bg-brand/90 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-md shadow-brand/20 text-sm"
         >
           {loading ? (

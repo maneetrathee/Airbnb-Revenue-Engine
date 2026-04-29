@@ -120,6 +120,17 @@ def run_weekly_report():
         logger.error(f"[Scheduler] Weekly report failed: {e}")
 
 
+
+def _ping_self():
+    """Keep Render free dyno warm — ping every 14 min to prevent cold start."""
+    import urllib.request, os
+    url = os.getenv("RENDER_EXTERNAL_URL", "https://airbnb-engine-api.onrender.com") + "/health"
+    try:
+        urllib.request.urlopen(url, timeout=10)
+        logger.info("[Scheduler] Self-ping OK")
+    except Exception as e:
+        logger.warning(f"[Scheduler] Self-ping failed: {e}")
+
 def create_scheduler() -> BackgroundScheduler:
     scheduler = BackgroundScheduler(timezone="Europe/London")
 
@@ -153,6 +164,15 @@ def create_scheduler() -> BackgroundScheduler:
         misfire_grace_time=3600,
     )
 
+    # Every 14 min — keep Render free dyno warm
+    scheduler.add_job(
+        _ping_self,
+        "interval",
+        minutes=14,
+        id="self_ping",
+        name="Render Keep-Alive Ping",
+        replace_existing=True,
+    )
     return scheduler
 
 
