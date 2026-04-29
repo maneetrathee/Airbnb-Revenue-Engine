@@ -14,12 +14,12 @@ import SentimentPage from "./pages/SentimentPage";
 import CompetitorDashboard from "./pages/CompetitorDashboard";
 
 const LoginPage = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-950 p-4 animate-in fade-in duration-500">
-    <div className="mb-8 text-center">
+  <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-950 p-4 w-full overflow-x-hidden animate-in fade-in duration-500">
+    <div className="mb-8 text-center max-w-full px-2">
       <div className="w-14 h-14 bg-[#FF385C] rounded-2xl flex items-center justify-center font-bold text-white shadow-lg shadow-[#FF385C]/30 mx-auto mb-5 text-3xl">
         R
       </div>
-      <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+      <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
         Welcome to RevEngine AI
       </h1>
       <p className="text-gray-500 mt-2 font-medium">
@@ -36,7 +36,7 @@ const LoginPage = () => (
           colorText: "#111827",
         },
         elements: {
-          card: "shadow-2xl border border-gray-100 rounded-2xl p-2 bg-white",
+          card: "shadow-2xl border border-gray-100 rounded-2xl p-2 bg-white w-full max-w-full",
           headerTitle: "hidden",
           formButtonPrimary:
             "bg-[#FF385C] hover:bg-rose-600 text-white font-bold shadow-md transition-all h-11",

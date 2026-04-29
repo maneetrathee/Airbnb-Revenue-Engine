@@ -115,7 +115,7 @@ const SyncDrawer = ({ property, globalSettings, onClose, onSave }) => {
           <div
             className={`p-4 rounded-xl border-2 transition-all ${useGlobal ? "border-brand bg-rose-50" : "border-gray-200 bg-gray-50"}`}
           >
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <Globe
                   size={18}
@@ -641,7 +641,7 @@ export default function PropertiesPage() {
       <Toast toast={toast} />
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <Building2 className="text-brand" size={32} />
@@ -657,7 +657,7 @@ export default function PropertiesPage() {
             setEditingProp(null);
             setShowModal(true);
           }}
-          className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white font-bold rounded-xl hover:bg-rose-600 transition-all shadow-lg shadow-brand/20"
+          className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 bg-brand text-white font-bold rounded-xl hover:bg-rose-600 transition-all shadow-lg shadow-brand/20"
         >
           <Plus size={18} /> Add Property
         </button>
@@ -665,10 +665,10 @@ export default function PropertiesPage() {
 
       {/* Global defaults banner */}
       {globalSettings && (
-        <div className="flex items-center gap-4 p-4 bg-gray-900 text-white rounded-2xl">
-          <Globe size={20} className="text-brand shrink-0" />
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-gray-900 text-white rounded-2xl">
+          <div className="flex items-center gap-3 w-full sm:w-auto"><Globe size={20} className="text-brand shrink-0" /><p className="font-bold text-sm sm:hidden">Global Defaults</p></div>
           <div className="flex-1">
-            <p className="font-bold text-sm">Global Defaults</p>
+            <p className="font-bold text-sm hidden sm:block">Global Defaults</p>
             <p className="text-xs text-gray-400 mt-0.5">
               Auto-sync:{" "}
               <strong
@@ -688,7 +688,7 @@ export default function PropertiesPage() {
               </strong>
             </p>
           </div>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-500 w-full sm:w-auto text-left sm:text-right">
             Applied to all properties using global settings
           </span>
         </div>
