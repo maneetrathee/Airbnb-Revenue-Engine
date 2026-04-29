@@ -62,11 +62,11 @@ export default function SurgeHeatmap({ neighborhood, propertyId }) {
   const mediumCount = data?.days?.filter(d => d.tier === "medium").length || 0;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             <Flame size={20} className="text-red-500" />
             Event & Holiday Surge Heatmap
           </h2>

@@ -16,10 +16,10 @@ const ROOM_TYPES = ["Entire home/apt", "Private room", "Shared room", "Hotel roo
 const fmt = n => n == null ? "—" : `£${Number(n).toLocaleString("en-GB", { maximumFractionDigits: 0 })}`;
 
 const POSITION_CONFIG = {
-  underpriced:   { color: "text-red-600",     bg: "bg-red-50",     border: "border-red-200",     icon: TrendingDown, label: "Underpriced" },
-  below_median:  { color: "text-amber-600",   bg: "bg-amber-50",   border: "border-amber-200",   icon: ArrowDown,    label: "Below Median" },
-  competitive:   { color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200", icon: Minus,        label: "Competitive" },
-  premium:       { color: "text-violet-600",  bg: "bg-violet-50",  border: "border-violet-200",  icon: TrendingUp,   label: "Premium" },
+  underpriced:   { color: "text-red-600",     bg: "bg-red-50 dark:bg-red-950",     border: "border-red-200 dark:border-red-900",     icon: TrendingDown, label: "Underpriced" },
+  below_median:  { color: "text-amber-600",   bg: "bg-amber-50 dark:bg-amber-950",   border: "border-amber-200 dark:border-amber-900",   icon: ArrowDown,    label: "Below Median" },
+  competitive:   { color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950", border: "border-emerald-200 dark:border-emerald-900", icon: Minus,        label: "Competitive" },
+  premium:       { color: "text-violet-600",  bg: "bg-violet-50 dark:bg-violet-950",  border: "border-violet-200 dark:border-violet-900",  icon: TrendingUp,   label: "Premium" },
 };
 
 export default function CompetitorDashboard() {
@@ -83,7 +83,7 @@ export default function CompetitorDashboard() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {/* Neighborhood */}
           <div>
@@ -160,7 +160,7 @@ export default function CompetitorDashboard() {
               { label: "Top 25% Price",    value: fmt(overview.percentiles.p75),             sub: "75th percentile",     icon: TrendingUp,    color: "text-violet-600" },
               { label: "Avg Occupancy",    value: overview.avg_occupancy ? `${overview.avg_occupancy}%` : "—", sub: "Est. from reviews", icon: Percent, color: "text-emerald-600" },
             ].map(({ label, value, sub, icon: Icon, color }) => (
-              <div key={label} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+              <div key={label} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{label}</p>
                   <Icon size={16} className={color} />
@@ -199,7 +199,7 @@ export default function CompetitorDashboard() {
           )}
 
           {/* Price percentile bar */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
             <h3 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
               <BarChart2 size={18} className="text-brand" />
               Price Percentile Breakdown
@@ -240,7 +240,7 @@ export default function CompetitorDashboard() {
 
           {/* Price distribution chart */}
           {distrib && distrib.buckets?.length > 0 && (
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
               <h3 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
                 <BarChart2 size={18} className="text-brand" />
                 Price Distribution — {overview.total_listings} listings
@@ -272,7 +272,7 @@ export default function CompetitorDashboard() {
           )}
 
           {/* Competitor listings table */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
               <h3 className="font-bold text-gray-900 flex items-center gap-2">
                 <Users size={18} className="text-brand" />

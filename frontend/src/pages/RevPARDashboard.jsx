@@ -73,11 +73,11 @@ const RevPARDashboard = () => {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
           <BarChart2 className="text-brand" size={32} />
           Market Intel
         </h1>
-        <p className="text-gray-500 mt-2">
+        <p className="text-gray-500 dark:text-gray-400 mt-2">
           RevPAR & Occupancy — the metrics serious hosts and investors track.
         </p>
       </div>
@@ -94,7 +94,7 @@ const RevPARDashboard = () => {
             <select
               value={selected}
               onChange={(e) => setSelected(e.target.value)}
-              className="appearance-none pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl font-semibold text-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all shadow-sm min-w-56"
+              className="appearance-none pl-4 pr-10 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold text-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all shadow-sm min-w-56"
             >
               {neighborhoods.map((n) => (
                 <option key={n} value={n}>{n}</option>
@@ -120,7 +120,7 @@ const RevPARDashboard = () => {
               <select
                 value={selectedPropertyId || ""}
                 onChange={e => setSelectedPropertyId(e.target.value ? Number(e.target.value) : null)}
-                className="appearance-none pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl font-semibold text-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all shadow-sm min-w-56"
+                className="appearance-none pl-4 pr-10 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold text-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all shadow-sm min-w-56"
               >
                 <option value="">No booking overlay</option>
                 {properties.map(p => (

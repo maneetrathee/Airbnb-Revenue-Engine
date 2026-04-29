@@ -1,37 +1,41 @@
-import { Search, Loader2 } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 
 const PropertyInput = ({ value, onChange, onSubmit, loading }) => {
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSubmit();
-  };
-
   return (
-    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-      <textarea
-        placeholder="Describe your property (e.g., Luxury penthouse with skyline views...)"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={handleKeyDown}
-        className="w-full h-24 p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none resize-none mb-4 transition-all"
-      />
-      <div className="flex items-center justify-between gap-4">
-        <span className="text-xs text-gray-400">
-          Tip: Be specific — mention bedrooms, location, amenities & views
-        </span>
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+      <div className="p-4">
+        <textarea
+          className="w-full min-h-[80px] resize-none bg-transparent outline-none
+                     text-gray-900 dark:text-gray-100
+                     placeholder-gray-400 dark:placeholder-gray-500
+                     text-sm leading-relaxed"
+          placeholder="Describe your property — e.g. luxury penthouse in Islington with skyline views and 2 bedrooms..."
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              onSubmit();
+            }
+          }}
+        />
+      </div>
+
+      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+        <p className="text-xs text-gray-400 dark:text-gray-500">
+          Tip: Be specific — mention bedrooms, location, amenities &amp; views
+        </p>
         <button
           onClick={onSubmit}
           disabled={loading || !value.trim()}
-          className={`px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
-            loading || !value.trim()
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-              : "bg-brand text-white hover:bg-rose-600 shadow-lg shadow-brand/30"
-          }`}
+          className="flex items-center gap-2 bg-brand hover:bg-brand/90 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-md shadow-brand/20 text-sm"
         >
           {loading ? (
-            <><Loader2 className="animate-spin" size={18} /> Analyzing...</>
+            <Loader2 size={16} className="animate-spin" />
           ) : (
-            <><Search size={18} /> Generate Smart Pricing</>
+            <Search size={16} />
           )}
+          Generate Smart Pricing
         </button>
       </div>
     </div>

@@ -117,7 +117,7 @@ const Onboarding = () => {
                     <Icon size={32} className={role.color} />
                   )}
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
                   {role.title}
                 </h2>
                 <p className="text-gray-500 font-medium leading-relaxed">

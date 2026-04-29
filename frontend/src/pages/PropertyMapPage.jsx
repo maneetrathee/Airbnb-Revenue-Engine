@@ -134,7 +134,7 @@ export default function PropertyMapPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4 px-1">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Map className="text-brand" size={28} />
             Property Map
           </h1>
@@ -144,7 +144,7 @@ export default function PropertyMapPage() {
         </div>
 
         {/* Mode toggle */}
-        <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-1 shadow-sm">
+        <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-1 shadow-sm">
           {MODES.map(m => {
             const Icon = m.icon;
             return (
@@ -162,7 +162,7 @@ export default function PropertyMapPage() {
       <div className="flex gap-4 flex-1 min-h-0">
 
         {/* Map */}
-        <div className="flex-1 rounded-2xl overflow-hidden border border-gray-200 shadow-sm relative z-0">
+        <div className="flex-1 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm relative z-0">
           {loading ? (
             <div className="h-full flex items-center justify-center bg-gray-50 text-gray-400">
               <div className="text-center">
@@ -231,7 +231,7 @@ export default function PropertyMapPage() {
 
           {/* Legend */}
           {!loading && (
-            <div className="absolute bottom-6 left-6 z-[1000] bg-white rounded-xl border border-gray-200 shadow-md p-3">
+            <div className="absolute bottom-6 left-6 z-[1000] bg-white rounded-xl border border-gray-200 dark:border-gray-700 shadow-md p-3">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
                 {currentMode?.label}
               </p>
@@ -253,7 +253,7 @@ export default function PropertyMapPage() {
         {/* Side panel */}
         <div className="w-72 flex flex-col gap-3 overflow-y-auto">
           {selected ? (
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 animate-in slide-in-from-right duration-200">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 animate-in slide-in-from-right duration-200">
               <div className="flex items-start justify-between mb-4">
                 <h3 className="font-bold text-gray-900 text-base leading-tight pr-2">
                   {selected.neighbourhood}
@@ -300,7 +300,7 @@ export default function PropertyMapPage() {
               )}
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-5 text-center text-gray-400">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-dashed border-gray-200 p-5 text-center text-gray-400">
               <Map size={28} className="mx-auto mb-2 opacity-40" />
               <p className="text-sm font-medium">Click a borough</p>
               <p className="text-xs mt-1">to see detailed market stats</p>
@@ -309,7 +309,7 @@ export default function PropertyMapPage() {
 
           {/* Top 5 boroughs */}
           {mapData && (
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
                 Top Areas by {currentMode?.label}
               </p>

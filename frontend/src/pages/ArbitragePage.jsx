@@ -232,7 +232,7 @@ export default function ArbitragePage() {
       </div>
 
       {/* ── Input form ─────────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-8">
         <h2 className="text-base font-bold text-gray-900 mb-6 flex items-center gap-2">
           <Calculator size={18} className="text-brand" />
           Property Details
@@ -416,7 +416,7 @@ export default function ArbitragePage() {
                 ["Gross Yield",     `${active.gross_yield}%`,    "Revenue ÷ purchase price"],
                 ["Payback",         active.payback_years ? `${active.payback_years}y` : "N/A", "Break-even period"],
               ].map(([label, value, sub]) => (
-                <div key={label} className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+                <div key={label} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 p-5 shadow-sm">
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{label}</p>
                   <p className="text-2xl font-black text-gray-900">{value}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
@@ -429,7 +429,7 @@ export default function ArbitragePage() {
           {active && (
             <div className="grid grid-cols-2 gap-6">
               {/* P&L breakdown */}
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
                 <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <PoundSterling size={16} className="text-brand" />
                   P&L Breakdown
@@ -463,7 +463,7 @@ export default function ArbitragePage() {
               </div>
 
               {/* BTL comparison */}
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
                 <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <TrendingUp size={16} className="text-brand" />
                   Airbnb vs Buy-to-Let
@@ -508,7 +508,7 @@ export default function ArbitragePage() {
           )}
 
           {/* Scenario bars */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
             <h3 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
               <Percent size={16} className="text-brand" />
               All Scenarios at a Glance

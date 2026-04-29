@@ -89,7 +89,7 @@ export default function PriceOverridesDrawer({ property, onClose }) {
               <label className="text-xs text-gray-500 block mb-1">Date</label>
               <input type="date" value={date} min={today}
                 onChange={e => setDate(e.target.value)}
-                className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400/30 focus:border-rose-400"/>
+                className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400/30 focus:border-rose-400"/>
             </div>
             <div>
               <label className="text-xs text-gray-500 block mb-1">Custom Price (£)</label>
@@ -97,7 +97,7 @@ export default function PriceOverridesDrawer({ property, onClose }) {
                 <PoundSterling size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
                 <input type="number" value={price} min={1} placeholder="e.g. 250"
                   onChange={e => setPrice(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-rose-400/30 focus:border-rose-400"/>
+                  className="w-full pl-8 pr-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-rose-400/30 focus:border-rose-400"/>
               </div>
             </div>
           </div>
@@ -107,7 +107,7 @@ export default function PriceOverridesDrawer({ property, onClose }) {
               <Tag size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
               <input value={reason} onChange={e => setReason(e.target.value)}
                 placeholder="e.g. Bank Holiday, Local event…"
-                className="w-full pl-8 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400/30 focus:border-rose-400"/>
+                className="w-full pl-8 pr-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400/30 focus:border-rose-400"/>
             </div>
           </div>
           <button onClick={handleAdd} disabled={!date || !price || saving}

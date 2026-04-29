@@ -1,14 +1,26 @@
 @import "tailwindcss";
 
-/* In Tailwind v4, we define custom colors right here in the CSS! */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-brand: #ff385c; /* Airbnb Red */
-  --color-dark: #111827; /* SaaS Dark Gray */
+  --color-brand: #FF385C;
+  --color-dark: #0f1117;
 }
 
-/* Leaflet Map Styling */
-.leaflet-container {
-  width: 100%;
-  height: 100%;
-  z-index: 10;
+html.dark {
+  background-color: #030712;
+  color: #f9fafb;
+}
+
+html:not(.dark) {
+  background-color: #f9fafb;
+  color: #111827;
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
 }

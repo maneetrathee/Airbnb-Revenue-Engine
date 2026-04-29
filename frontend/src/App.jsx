@@ -8,19 +8,18 @@ import RevPARDashboard from "./pages/RevPARDashboard";
 import SettingsPage from "./pages/SettingsPage";
 import PropertiesPage from "./pages/PropertiesPage";
 import ArbitragePage from "./pages/ArbitragePage";
-import MLPredictionPage from "./pages/MLPredictionPage";
 import MLComparisonPage from "./pages/MLComparisonPage";
 import PropertyMapPage from "./pages/PropertyMapPage";
 import SentimentPage from "./pages/SentimentPage";
 import CompetitorDashboard from "./pages/CompetitorDashboard";
 
 const LoginPage = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 animate-in fade-in duration-500">
+  <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-950 p-4 animate-in fade-in duration-500">
     <div className="mb-8 text-center">
       <div className="w-14 h-14 bg-[#FF385C] rounded-2xl flex items-center justify-center font-bold text-white shadow-lg shadow-[#FF385C]/30 mx-auto mb-5 text-3xl">
         R
       </div>
-      <h1 className="text-3xl font-black text-gray-900 tracking-tight">
+      <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
         Welcome to RevEngine AI
       </h1>
       <p className="text-gray-500 mt-2 font-medium">
@@ -73,8 +72,9 @@ function App() {
                     element={
                       <DashboardLayout>
                         <Routes>
-                          <Route path="/ml" element={<MLPredictionPage />} />
+                          {/* Dashboard now includes ML — /ml redirects here */}
                           <Route path="/" element={<PricingDashboard />} />
+                          <Route path="/ml" element={<PricingDashboard />} />
                           <Route path="/market" element={<RevPARDashboard />} />
                           <Route
                             path="/properties"
@@ -84,14 +84,16 @@ function App() {
                             path="/arbitrage"
                             element={<ArbitragePage />}
                           />
-
                           <Route
                             path="/competitors"
                             element={<CompetitorDashboard />}
                           />
-
                           <Route path="/settings" element={<SettingsPage />} />
                           <Route path="/map" element={<PropertyMapPage />} />
+                          <Route
+                            path="/sentiment"
+                            element={<SentimentPage />}
+                          />
                           <Route
                             path="*"
                             element={
@@ -99,10 +101,6 @@ function App() {
                                 404 - Page Not Found
                               </div>
                             }
-                          />
-                          <Route
-                            path="/sentiment"
-                            element={<SentimentPage />}
                           />
                         </Routes>
                       </DashboardLayout>
@@ -114,7 +112,7 @@ function App() {
           }
         />
       </Routes>
-    <InstallPrompt />
+      <InstallPrompt />
     </Router>
   );
 }

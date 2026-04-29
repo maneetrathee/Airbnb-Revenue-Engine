@@ -277,7 +277,7 @@ const PropertyModal = ({ property, neighborhoods, onClose, onSave }) => {
       />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
             {isEdit ? "Edit Property" : "Add New Property"}
           </h2>
           <button
@@ -441,7 +441,7 @@ const PropertyCard = ({ property, onEdit, onDelete, onSync, onOverride, onIcal }
   const sync = property.sync_settings;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
       <div className="relative h-44 overflow-hidden bg-gray-100">
         <img
           src={
@@ -706,7 +706,7 @@ export default function PropertiesPage() {
       {!loading && properties.length === 0 && (
         <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-300">
           <Building2 size={48} className="mx-auto text-gray-200 mb-4" />
-          <h3 className="text-lg font-bold text-gray-900 mb-2">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
             No properties yet
           </h3>
           <p className="text-gray-500 text-sm mb-6">

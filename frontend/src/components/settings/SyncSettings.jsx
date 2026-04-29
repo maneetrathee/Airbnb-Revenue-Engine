@@ -10,7 +10,7 @@ import {
 const BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_URL + "";
 
 const Card = ({ children, className = "" }) => (
-  <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm p-6 ${className}`}>
+  <div className={`bg-white rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 ${className}`}>
     {children}
   </div>
 );
@@ -207,7 +207,7 @@ export default function SyncSettings() {
       <Card>
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Auto-Sync Pricing Daily</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Auto-Sync Pricing Daily</h2>
             <p className="text-sm text-gray-500 mt-1">
               The AI recalculates and pushes optimised prices every night at midnight.
             </p>
@@ -230,7 +230,7 @@ export default function SyncSettings() {
       <Card>
         <div className="flex items-center gap-2 mb-1">
           <Mail size={20} className="text-brand" />
-          <h2 className="text-lg font-bold text-gray-900">Notification Email</h2>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Notification Email</h2>
         </div>
         <p className="text-sm text-gray-500 mb-4">
           Get a <strong>daily sync summary at 8am</strong> and a <strong>weekly RevPAR report every Monday</strong>.
@@ -269,7 +269,7 @@ export default function SyncSettings() {
 
       {/* Neighborhood */}
       <Card>
-        <h2 className="text-lg font-bold text-gray-900 mb-1">Target Neighborhood</h2>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">Target Neighborhood</h2>
         <p className="text-sm text-gray-500 mb-4">Global default — used for properties set to "Use Global".</p>
         <div className="relative">
           <select
@@ -288,7 +288,7 @@ export default function SyncSettings() {
       <Card>
         <div className="flex items-center gap-2 mb-1">
           <Shield size={20} className="text-brand" />
-          <h2 className="text-lg font-bold text-gray-900">Global Price Guardrails</h2>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Global Price Guardrails</h2>
         </div>
         <p className="text-sm text-gray-500 mb-6">Default bounds for all properties. Individual properties can override these.</p>
         <div className="grid grid-cols-2 gap-6">
@@ -348,7 +348,7 @@ export default function SyncSettings() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <History size={20} className="text-brand" />
-            <h2 className="text-lg font-bold text-gray-900">Sync History</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Sync History</h2>
           </div>
           <button onClick={fetchLogs} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
             <RefreshCw size={14} className="text-gray-400" />

@@ -9,7 +9,7 @@ const Forecast = ({ forecast }) => {
 
   return (
     <div>
-      <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+      <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200">
         <Calendar className="text-brand" size={24} />
         7-Day Dynamic Forecast
       </h3>

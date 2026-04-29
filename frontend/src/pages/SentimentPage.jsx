@@ -15,9 +15,9 @@ const METRICS  = ["Overall", "Cleanliness", "Check-in", "Communication", "Locati
 const TABS     = ["Rankings", "Compare", "AI Review Analyser", "Description Scorer"];
 
 const ScoreBadge = ({ score }) => {
-  const color = score >= 4.8 ? "text-emerald-600 bg-emerald-50" :
-                score >= 4.5 ? "text-amber-600 bg-amber-50" :
-                               "text-red-600 bg-red-50";
+  const color = score >= 4.8 ? "text-emerald-600 bg-emerald-50 dark:bg-emerald-950 dark:text-emerald-400" :
+                score >= 4.5 ? "text-amber-600 bg-amber-50 dark:bg-amber-950 dark:text-amber-400" :
+                               "text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400";
   return <span className={`text-xs font-black px-2 py-0.5 rounded-full ${color}`}>{score?.toFixed(2)}</span>;
 };
 
@@ -27,9 +27,9 @@ const RadarCard = ({ data, color, title }) => {
     subject: key, value: val, fullMark: 5,
   }));
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-bold text-gray-900">{title || data.neighbourhood}</h3>
+        <h3 className="font-bold text-gray-900 dark:text-gray-100">{title || data.neighbourhood}</h3>
         <ScoreBadge score={data.scores["Overall"]} />
       </div>
       <ResponsiveContainer width="100%" height={220}>
@@ -42,12 +42,12 @@ const RadarCard = ({ data, color, title }) => {
       <div className="grid grid-cols-2 gap-2 mt-3">
         {Object.entries(data.scores).map(([k, v]) => (
           <div key={k} className="flex items-center justify-between text-xs">
-            <span className="text-gray-500">{k}</span>
+            <span className="text-gray-500 dark:text-gray-400">{k}</span>
             <div className="flex items-center gap-1.5">
-              <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div className="w-16 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div className="h-full rounded-full" style={{ width: `${((v - 4) / 1) * 100}%`, background: color }} />
               </div>
-              <span className="font-bold text-gray-700">{v?.toFixed(2)}</span>
+              <span className="font-bold text-gray-700 dark:text-gray-300">{v?.toFixed(2)}</span>
             </div>
           </div>
         ))}
@@ -144,21 +144,21 @@ export default function SentimentPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
           <MessageSquare className="text-brand" size={32} />
           Sentiment Analysis
         </h1>
-        <p className="text-gray-500 mt-2">
+        <p className="text-gray-500 dark:text-gray-400 mt-2">
           Neighbourhood score breakdowns + AI-powered review and description analysis.
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 shadow-sm w-fit">
+      <div className="flex gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-1 shadow-sm w-fit">
         {TABS.map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-              tab === t ? "bg-gray-900 text-white" : "text-gray-500 hover:bg-gray-50"
+              tab === t ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900" : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
             }`}>
             {t}
           </button>
@@ -170,14 +170,14 @@ export default function SentimentPage() {
         <div className="space-y-5">
           {/* Metric selector */}
           <div className="flex items-center gap-3">
-            <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Rank by</span>
+            <span className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rank by</span>
             <div className="flex gap-1 flex-wrap">
               {METRICS.map(m => (
                 <button key={m} onClick={() => setMetric(m)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all border ${
                     metric === m
-                      ? "bg-gray-900 text-white border-gray-900"
-                      : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
+                      ? "bg-gray-100 dark:bg-gray-100 text-gray-900 border-gray-300"
+                      : "bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                   }`}>
                   {m}
                 </button>
@@ -190,18 +190,18 @@ export default function SentimentPage() {
               <Loader2 size={24} className="animate-spin mr-2" /><span>Loading rankings…</span>
             </div>
           ) : rankings && (
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
               <div className="p-5 border-b border-gray-100 flex items-center gap-2">
                 <ArrowUpDown size={16} className="text-brand" />
-                <h3 className="font-bold text-gray-900">London Neighbourhoods — {metric} Score</h3>
+                <h3 className="font-bold text-gray-900 dark:text-gray-100">London Neighbourhoods — {metric} Score</h3>
                 <span className="text-xs text-gray-400 ml-auto">{rankings.rankings.length} areas ranked</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-gray-50 border-b border-gray-100">
+                    <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
                       {["Rank", "Neighbourhood", metric, "Overall", "Listings", "Bar"].map(h => (
-                        <th key={h} className="text-left text-xs font-bold text-gray-500 uppercase tracking-wider px-5 py-3">{h}</th>
+                        <th key={h} className="text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-5 py-3">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -211,22 +211,22 @@ export default function SentimentPage() {
                       const pct      = ((r.score - 4) / 1) * 100;
                       const medal    = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : null;
                       return (
-                        <tr key={r.neighbourhood} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                          <td className="px-5 py-3 text-sm font-black text-gray-400">
+                        <tr key={r.neighbourhood} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                          <td className="px-5 py-3 text-sm font-black text-gray-400 dark:text-gray-500">
                             {medal || `#${r.rank}`}
                           </td>
                           <td className="px-5 py-3">
-                            <span className="text-sm font-bold text-gray-900">{r.neighbourhood}</span>
+                            <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{r.neighbourhood}</span>
                           </td>
                           <td className="px-5 py-3"><ScoreBadge score={r.score} /></td>
                           <td className="px-5 py-3">
-                            <span className="text-sm text-gray-500">{r.overall?.toFixed(3)}</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">{r.overall?.toFixed(3)}</span>
                           </td>
                           <td className="px-5 py-3">
-                            <span className="text-xs text-gray-400">{r.reviewed.toLocaleString()}</span>
+                            <span className="text-xs text-gray-400 dark:text-gray-500">{r.reviewed.toLocaleString()}</span>
                           </td>
                           <td className="px-5 py-3 w-32">
-                            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                               <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-emerald-500 transition-all"
                                 style={{ width: `${Math.max(0, pct)}%` }} />
                             </div>
@@ -245,24 +245,24 @@ export default function SentimentPage() {
       {/* ── Tab 2: Compare ─────────────────────────────────────────────────── */}
       {tab === "Compare" && (
         <div className="space-y-5">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
             <div className="flex items-center gap-4">
               <div className="flex-1">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Area A</label>
+                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-2">Area A</label>
                 <div className="relative">
                   <select value={neighA} onChange={e => setNeighA(e.target.value)}
-                    className="appearance-none w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand">
+                    className="appearance-none w-full pl-4 pr-10 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-semibold text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand">
                     {neighborhoods.map(n => <option key={n} value={n}>{n}</option>)}
                   </select>
                   <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>
               </div>
-              <div className="pt-6 text-gray-400 font-black">VS</div>
+              <div className="pt-6 text-gray-400 dark:text-gray-500 font-black">VS</div>
               <div className="flex-1">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Area B</label>
+                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-2">Area B</label>
                 <div className="relative">
                   <select value={neighB} onChange={e => setNeighB(e.target.value)}
-                    className="appearance-none w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand">
+                    className="appearance-none w-full pl-4 pr-10 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-semibold text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand">
                     {neighborhoods.map(n => <option key={n} value={n}>{n}</option>)}
                   </select>
                   <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -284,7 +284,7 @@ export default function SentimentPage() {
               <RadarCard data={compareData.b} color="#8b5cf6" />
 
               {/* Head to head table */}
-              <div className="col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+              <div className="col-span-2 bg-white rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
                 <h3 className="font-bold text-gray-900 mb-4">Head-to-Head Breakdown</h3>
                 <div className="space-y-3">
                   {Object.keys(compareData.a.scores).map(metric => {
@@ -337,7 +337,7 @@ export default function SentimentPage() {
       {/* ── Tab 3: AI Review Analyser ──────────────────────────────────────── */}
       {tab === "AI Review Analyser" && (
         <div className="space-y-5">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles size={20} className="text-brand" />
               <h2 className="font-bold text-gray-900 text-lg">AI Review Analyser</h2>
@@ -348,7 +348,7 @@ export default function SentimentPage() {
             </p>
 
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Your Neighbourhood (optional)</label>
+              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-2">Your Neighbourhood (optional)</label>
               <div className="relative w-64">
                 <select value={reviewNeigh} onChange={e => setReviewNeigh(e.target.value)}
                   className="appearance-none w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand">
@@ -360,7 +360,7 @@ export default function SentimentPage() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Paste Guest Reviews</label>
+              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-2">Paste Guest Reviews</label>
               <textarea value={reviews} onChange={e => setReviews(e.target.value)} rows={8}
                 placeholder="Paste 5-20 guest reviews here. You can copy them directly from your Airbnb host dashboard..."
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all resize-none" />
@@ -383,7 +383,7 @@ export default function SentimentPage() {
           {reviewResult && !reviewResult.parse_error && (
             <div className="space-y-4 animate-in fade-in duration-300">
               {/* Sentiment score */}
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-bold text-gray-900 text-lg">Sentiment Analysis</h3>
                   <div className="flex items-center gap-2">
@@ -463,7 +463,7 @@ export default function SentimentPage() {
       {/* ── Tab 4: Description Scorer ──────────────────────────────────────── */}
       {tab === "Description Scorer" && (
         <div className="space-y-5">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <Star size={20} className="text-brand" />
               <h2 className="font-bold text-gray-900 text-lg">Listing Description Scorer</h2>
@@ -474,7 +474,7 @@ export default function SentimentPage() {
             </p>
 
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Neighbourhood (optional)</label>
+              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-2">Neighbourhood (optional)</label>
               <div className="relative w-64">
                 <select value={descNeigh} onChange={e => setDescNeigh(e.target.value)}
                   className="appearance-none w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand">
@@ -486,7 +486,7 @@ export default function SentimentPage() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Listing Description</label>
+              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-2">Listing Description</label>
               <textarea value={description} onChange={e => setDescription(e.target.value)} rows={8}
                 placeholder="Paste your full Airbnb listing description here..."
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all resize-none" />
@@ -508,7 +508,7 @@ export default function SentimentPage() {
           {descResult && !descResult.parse_error && (
             <div className="space-y-4 animate-in fade-in duration-300">
               {/* Overall score */}
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
                 <div className="flex items-center justify-between mb-5">
                   <h3 className="font-bold text-gray-900 text-lg">Description Score</h3>
                   <div className="w-20 h-20 rounded-full flex items-center justify-center border-4 text-2xl font-black"

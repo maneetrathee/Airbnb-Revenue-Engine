@@ -5,7 +5,7 @@ const CompetitorList = ({ listings }) => {
 
   return (
     <div>
-      <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+      <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200">
         <Home className="text-brand" size={24} />
         Top Market Comparables
       </h3>
@@ -13,7 +13,7 @@ const CompetitorList = ({ listings }) => {
         {listings.map((listing, index) => (
           <div
             key={index}
-            className="flex justify-between items-center p-4 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow"
+            className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-md transition-shadow"
           >
             <div>
               <h4 className="font-bold text-gray-900 mb-1 line-clamp-1">

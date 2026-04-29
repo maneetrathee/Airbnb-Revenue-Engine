@@ -102,7 +102,7 @@ export default function MLComparisonPage() {
       <div className="flex items-center gap-3">
         <Trophy className="text-yellow-500" size={28} />
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Model Comparison</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Model Comparison</h1>
           <p className="text-sm text-gray-500">
             7 models trained on 61,686 London Airbnb listings · 36 features
           </p>

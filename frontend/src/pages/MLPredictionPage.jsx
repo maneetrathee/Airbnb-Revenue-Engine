@@ -97,7 +97,7 @@ export default function MLPredictionPage() {
       <div className="flex items-center gap-3">
         <Brain className="text-blue-600" size={28} />
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             ML Price Prediction
           </h1>
           <p className="text-sm text-gray-500">

@@ -27,7 +27,7 @@ import logging
 logger = logging.getLogger("pricing_engine")
 
 DB_URL = os.getenv("DATABASE_URL", "postgresql://localhost:5432/airbnb_engine")
-engine = create_engine(DB_URL)
+engine = create_engine(DB_URL, pool_pre_ping=True, pool_recycle=300, connect_args={"connect_timeout": 10})
 
 
 # ── Data structures ───────────────────────────────────────────────────────────

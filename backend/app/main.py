@@ -25,7 +25,7 @@ scheduler = create_scheduler()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Starting APScheduler (3 jobs: sync, daily digest, weekly report)...")
+    logger.info("Starting APScheduler...")
     scheduler.start()
     status = get_scheduler_status(scheduler)
     for job in status.get("jobs", []):
@@ -43,9 +43,16 @@ app.include_router(properties_router)
 app.include_router(ml_router)
 
 DB_URL = os.getenv("DATABASE_URL", "postgresql://localhost:5432/airbnb_engine")
-engine = create_engine(DB_URL)
 
-# ── Ensure email column exists in sync_settings ───────────────────────────────
+# ── FIX: pool_pre_ping reconnects dropped Neon SSL connections automatically ──
+engine = create_engine(
+    DB_URL,
+    pool_pre_ping=True,       # test connection before use, reconnect if dead
+    pool_recycle=300,         # recycle connections every 5 min (Neon idles at ~5min)
+    pool_size=5,
+    max_overflow=10,
+)
+
 def _ensure_email_column():
     with engine.begin() as conn:
         conn.execute(text("""
@@ -56,9 +63,8 @@ def _ensure_email_column():
 try:
     _ensure_email_column()
 except Exception:
-    pass  # Table may not exist yet on first run
+    pass
 
-# ── Scheduler status ──────────────────────────────────────────────────────────
 @app.get("/api/v1/sync/status")
 def get_sync_status():
     status = get_scheduler_status(scheduler)
@@ -79,13 +85,11 @@ def trigger_all_syncs():
     run_nightly_sync()
     return {"success": True, "message": "Sync triggered for all active properties."}
 
-# ── Email: save user email + send test ───────────────────────────────────────
 class EmailUpdate(BaseModel):
     email: str
 
 @app.post("/api/v1/users/{user_id}/email")
 def save_user_email(user_id: str, body: EmailUpdate):
-    """Save the user's notification email address."""
     with engine.begin() as conn:
         conn.execute(text("""
             UPDATE sync_settings SET email = :email WHERE user_id = :uid
@@ -94,17 +98,13 @@ def save_user_email(user_id: str, body: EmailUpdate):
 
 @app.post("/api/v1/users/{user_id}/test-email")
 def send_test_email(user_id: str):
-    """
-    Sends a test daily digest immediately to the user's saved email.
-    Useful for verifying Resend is configured correctly.
-    """
     with engine.connect() as conn:
         row = conn.execute(text(
             "SELECT email FROM sync_settings WHERE user_id = :uid"
         ), {"uid": user_id}).fetchone()
 
     if not row or not row.email:
-        raise HTTPException(400, "No email saved for this user. Save email first via POST /api/v1/users/{user_id}/email")
+        raise HTTPException(400, "No email saved for this user.")
 
     from app.email_digest import send_daily_digest
     success = send_daily_digest(row.email, user_id)
@@ -112,9 +112,8 @@ def send_test_email(user_id: str):
     if success:
         return {"success": True, "message": f"Test email sent to {row.email}"}
     else:
-        raise HTTPException(500, "Failed to send email. Check RESEND_API_KEY in your .env file.")
+        raise HTTPException(500, "Failed to send email. Check RESEND_API_KEY.")
 
-# ── Pricing forecast endpoints ────────────────────────────────────────────────
 @app.get("/api/v1/pricing/forecast")
 def smart_forecast(
     neighborhood: str = Query(...),
@@ -129,7 +128,7 @@ def smart_forecast(
 @app.get("/api/v1/pricing/check")
 def price_check(
     neighborhood: str   = Query(...),
-    target_date:  str   = Query(..., description="YYYY-MM-DD"),
+    target_date:  str   = Query(...),
     min_price:    float = Query(30),
     max_price:    float = Query(500),
     nights:       int   = Query(1),
@@ -158,7 +157,6 @@ def price_check(
         "summary":          result.summary,
     }
 
-# ── predict-price (enriched with pricing engine) ──────────────────────────────
 _model = None
 
 def get_model():
@@ -171,42 +169,65 @@ def get_model():
 
 @app.get("/api/v1/predict-price")
 def predict_price(description: str = Query(...)):
-    model        = get_model()
-    query_vector = model.encode(description).tolist()
-    vector_str   = f"[{','.join(map(str, query_vector))}]"
+    import re as _re
+    model = get_model()
+    LONDON_HOODS = [
+        "Westminster","Camden","Hackney","Islington","Southwark","Tower Hamlets",
+        "Lambeth","Wandsworth","Hammersmith","Kensington","Chelsea","Fulham",
+        "Brixton","Shoreditch","Canary Wharf","Greenwich","Lewisham","Newham",
+        "Barking","Croydon","Richmond","Kingston","Bromley","Brent","Ealing",
+        "Haringey","Enfield","Barnet","Harrow","Hillingdon","City of London",
+        "Mayfair","Notting Hill","Clapham","Peckham",
+    ]
+    desc_lower = description.lower()
+    detected_hood = next((n for n in LONDON_HOODS if n.lower() in desc_lower), None)
+    is_luxury = any(k in desc_lower for k in ["luxury","penthouse","premium","designer","skyline","rooftop"])
+    is_budget = any(k in desc_lower for k in ["cosy","cozy","budget","affordable","shared"])
+    bed_match = _re.search(r"(\d+)\s*bed", desc_lower)
+    bed_count = int(bed_match.group(1)) if bed_match else None
 
-    sql = text("""
-        SELECT name, price_base, latitude, longitude, neighborhood,
-               round((1 - (description_embedding <=> :vec))::numeric, 3) AS similarity
-        FROM listings
-        WHERE description_embedding IS NOT NULL
-          AND price_base IS NOT NULL AND latitude IS NOT NULL
-        ORDER BY description_embedding <=> :vec LIMIT 5
-    """)
+    where = ["price_base IS NOT NULL", "neighborhood IS NOT NULL"]
+    params = {}
+    if detected_hood:
+        where.append("neighborhood ILIKE :hood")
+        params["hood"] = f"%{detected_hood}%"
+    if is_luxury:
+        where.append("price_base > 150")
+    elif is_budget:
+        where.append("price_base < 100")
+    if bed_count and bed_count >= 2:
+        where.append("room_type = 'Entire home/apt'")
+
+    sql = text("SELECT name, price_base, neighborhood, 0.75 AS similarity FROM listings WHERE " + " AND ".join(where) + " ORDER BY RANDOM() LIMIT 5")
     with engine.connect() as conn:
-        df = pd.read_sql(sql, conn, params={"vec": vector_str})
+        df = pd.read_sql(sql, conn, params=params)
+
+    if df.empty:
+        sql2 = text("SELECT name, price_base, neighborhood, 0.75 AS similarity FROM listings WHERE price_base IS NOT NULL AND neighborhood IS NOT NULL ORDER BY RANDOM() LIMIT 5")
+        with engine.connect() as conn:
+            df = pd.read_sql(sql2, conn, params={})
 
     if df.empty:
         return {"error": "Not enough processed data to predict price."}
 
-    base_price   = float(df['price_base'].mean())
-    neighborhood = df['neighborhood'].mode()[0] if 'neighborhood' in df.columns else None
+    base_price   = float(df["price_base"].mean())
+    neighborhood = detected_hood or (df["neighborhood"].mode()[0] if "neighborhood" in df.columns else None)
 
     if neighborhood:
         forecast = calculate_forecast(neighborhood, 30, 9999, 7, 1)
         for day in forecast:
-            ratio      = base_price / day["base_price"] if day["base_price"] > 0 else 1
+            ratio        = base_price / day["base_price"] if day["base_price"] > 0 else 1
             day["price"] = round(day["price"] * ratio, 2)
             day["tags"]  = [day["summary"][:45]] if day["summary"] else ["Standard Rate"]
     else:
         forecast = []
-        today    = datetime.now()
+        today = datetime.now()
         for i in range(7):
             t = today + timedelta(days=i)
             modifier, tags = 1.0, []
-            if t.weekday() in [4,5]: modifier += 0.15; tags.append("Weekend (+15%)")
-            if t.month in [6,7,8]:  modifier += 0.20; tags.append("Summer Peak (+20%)")
-            elif t.month in [11,12]: modifier += 0.10; tags.append("Holiday Demand (+10%)")
+            if t.weekday() in [4, 5]: modifier += 0.15; tags.append("Weekend (+15%)")
+            if t.month in [6, 7, 8]:  modifier += 0.20; tags.append("Summer Peak (+20%)")
+            elif t.month in [11, 12]: modifier += 0.10; tags.append("Holiday Demand (+10%)")
             if not tags: tags.append("Standard Rate")
             forecast.append({"date": t.strftime("%b %d"), "day": t.strftime("%a"),
                              "price": round(base_price * modifier, 2), "tags": tags})
@@ -214,8 +235,6 @@ def predict_price(description: str = Query(...)):
     return {"query": description, "base_price": round(base_price, 2),
             "similar_listings": df.to_dict(orient="records"), "forecast": forecast}
 
-
-# ── Arbitrage router (Feature 3) ──────────────────────────────────────────────
 from app.arbitrage import router as arbitrage_router
 from app.events import router as events_router
 from app.ical import router as ical_router
