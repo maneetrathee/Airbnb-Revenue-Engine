@@ -1,6 +1,6 @@
 import {
   Target, MessageSquare, Home, LineChart, Map,
-  Settings, Building2, TrendingUp, Trophy, Sun, Moon,
+  Settings, Building2, TrendingUp, Trophy, Sun, Moon, X,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext";
@@ -18,7 +18,6 @@ const navItems = [
 ];
 
 const Sidebar = ({ onClose }) => {
-  const handleNavClick = () => { if (onClose) onClose(); };
   const location = useLocation();
   const { dark, toggle } = useTheme();
 
@@ -29,9 +28,13 @@ const Sidebar = ({ onClose }) => {
           R
         </div>
         <span className="text-xl font-bold tracking-tight">RevEngine</span>
-        {onClose && <button onClick={onClose} className="lg:hidden ml-auto p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800"><X size={18} /></button>}
         {onClose && (
-          <button onClick={onClose} className="lg:hidden ml-auto p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-all"><X size={18} /></button>
+          <button
+            onClick={onClose}
+            className="lg:hidden ml-auto p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-all"
+          >
+            <X size={18} />
+          </button>
         )}
       </div>
 
