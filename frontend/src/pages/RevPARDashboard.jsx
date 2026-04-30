@@ -26,9 +26,13 @@ const RevPARDashboard = () => {
   const [loading, setLoading]             = useState(false);
   const [error, setError]                 = useState("");
 
-  // Property selector for iCal overlay
-  const [properties, setProperties]               = useState([]);
+  const [properties, setProperties]                 = useState([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState(null);
+
+  // Only show properties whose neighbourhood matches selected
+  const neighbourhoodProperties = properties.filter(
+    p => p.neighborhood && p.neighborhood.toLowerCase() === selected.toLowerCase()
+  );
 
   // Load neighborhoods + properties on mount
   useEffect(() => {
@@ -41,11 +45,7 @@ const RevPARDashboard = () => {
 
     fetch(`${BASE_URL}/api/v1/properties/${userId}`)
       .then(r => r.json())
-      .then(d => {
-        const props = d.properties || [];
-        setProperties(props);
-        if (props.length) setSelectedPropertyId(props[0].id);
-      })
+      .then(d => setProperties(d.properties || []))
       .catch(() => {});
   }, [userId]);
 
@@ -57,6 +57,7 @@ const RevPARDashboard = () => {
     setSummary(null);
     setTrend(null);
     setRec(null);
+    setSelectedPropertyId(null);
 
     Promise.all([
       getRevPARSummary(selected),
@@ -94,7 +95,7 @@ const RevPARDashboard = () => {
             <select
               value={selected}
               onChange={(e) => setSelected(e.target.value)}
-              className="appearance-none pl-4 pr-10 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold text-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all shadow-sm min-w-56"
+              className="appearance-none pl-4 pr-10 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold text-gray-900 dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all shadow-sm min-w-56"
             >
               {neighborhoods.map((n) => (
                 <option key={n} value={n}>{n}</option>
@@ -110,8 +111,8 @@ const RevPARDashboard = () => {
           )}
         </div>
 
-        {/* Property selector for iCal overlay */}
-        {properties.length > 0 && (
+        {/* Property selector — only shown when a matching property exists */}
+        {neighbourhoodProperties.length > 0 && (
           <div className="flex items-center gap-4">
             <label className="text-sm font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">
               My Property
@@ -120,10 +121,10 @@ const RevPARDashboard = () => {
               <select
                 value={selectedPropertyId || ""}
                 onChange={e => setSelectedPropertyId(e.target.value ? Number(e.target.value) : null)}
-                className="appearance-none pl-4 pr-10 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold text-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all shadow-sm min-w-56"
+                className="appearance-none pl-4 pr-10 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl font-semibold text-gray-900 dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all shadow-sm min-w-56"
               >
                 <option value="">No booking overlay</option>
-                {properties.map(p => (
+                {neighbourhoodProperties.map(p => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
@@ -186,7 +187,6 @@ const RevPARDashboard = () => {
           <RevPAROptimizer data={recommendation} />
           <RevPARChart trend={trend?.trend} />
 
-          {/* Surge Heatmap — now with propertyId for BOOKED overlay */}
           <SurgeHeatmap
             neighborhood={selected}
             propertyId={selectedPropertyId}

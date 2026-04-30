@@ -34,7 +34,7 @@ export default function SurgeHeatmap({ neighborhood, propertyId }) {
 
   // NEW: Fetch iCal Bookings
   useEffect(() => {
-    if (!propertyId) return;
+    if (!propertyId) { setBookedDates(new Set()); return; }
     fetch(`${BASE_URL}/api/v1/ical/bookings/${propertyId}?year=${year}&month=${month}`)
       .then(r => r.json())
       .then(d => setBookedDates(new Set(d.booked_dates || [])));
