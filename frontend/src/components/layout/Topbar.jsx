@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { Bell, X } from "lucide-react";
-import { useUser } from "@clerk/clerk-react";
+import { Bell, X, Sun, Moon, Menu } from "lucide-react";
+import { useUser, UserButton } from "@clerk/clerk-react";
+import { useTheme } from "../../context/ThemeContext";
 
 const MOCK_NOTIFICATIONS = [];
 
-export default function Topbar() {
+export default function Topbar({ onMenuClick }) {
   const { user } = useUser();
+  const { dark, toggle } = useTheme();
   const [notifOpen, setNotifOpen] = useState(false);
 
-  const initials = user?.firstName?.[0]?.toUpperCase() ?? "U";
   const name = user?.firstName
     ? `${user.firstName} ${user.lastName ?? ""}`.trim()
     : "Lead Engineer";
@@ -16,10 +17,28 @@ export default function Topbar() {
   const hasNotifs = MOCK_NOTIFICATIONS.length > 0;
 
   return (
-    <header className="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-end px-4 md:px-8 sticky top-0 z-10 transition-colors duration-300">
+    <header className="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center px-4 md:px-8 sticky top-0 z-10 transition-colors duration-300">
 
-      {/* Right — bell + user */}
-      <div className="flex items-center gap-2 relative">
+      {/* Hamburger — mobile only */}
+      <button
+        onClick={onMenuClick}
+        className="lg:hidden p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all mr-2"
+      >
+        <Menu size={20} />
+      </button>
+
+      <div className="flex-1" />
+
+      {/* Right — theme + bell + user */}
+      <div className="flex items-center gap-2">
+
+        {/* Theme toggle */}
+        <button
+          onClick={toggle}
+          className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+        >
+          {dark ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
 
         {/* Notification bell */}
         <div className="relative">
@@ -66,9 +85,14 @@ export default function Topbar() {
 
         {/* User */}
         <div className="flex items-center gap-2 pl-2 border-l border-gray-200 dark:border-gray-700">
-          <div className="w-8 h-8 bg-[#FF385C] rounded-full flex items-center justify-center text-white text-sm font-bold">
-            {initials}
-          </div>
+          <UserButton
+            afterSignOutUrl="/sign-in"
+            appearance={{
+              elements: {
+                userButtonAvatarBox: "w-8 h-8 shadow-sm"
+              }
+            }}
+          />
           <div className="hidden lg:block">
             <p className="text-sm font-semibold text-gray-900 dark:text-white leading-none">{name}</p>
             <p className="text-xs text-gray-400 mt-0.5">Admin Workspace</p>

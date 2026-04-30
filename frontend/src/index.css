@@ -3,22 +3,26 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-brand: #FF385C;
+  --color-brand: #ff385c;
   --color-dark: #0f1117;
 }
 
-html.dark {
-  background-color: #030712;
-  color: #f9fafb;
+@layer base {
+  html.dark {
+    background-color: #030712;
+    color: #f9fafb;
+  }
+
+  html:not(.dark) {
+    background-color: #f9fafb;
+    color: #111827;
+  }
 }
 
-html:not(.dark) {
-  background-color: #f9fafb;
-  color: #111827;
-}
-
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+@layer utilities {
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }
 
 * {

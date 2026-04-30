@@ -17,7 +17,8 @@ const navItems = [
   { name: "Model Comparison", path: "/ml/comparison", icon: Trophy,        activeClass: "bg-amber-500" },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ onClose }) => {
+  const handleNavClick = () => { if (onClose) onClose(); };
   const location = useLocation();
   const { dark, toggle } = useTheme();
 
@@ -28,6 +29,10 @@ const Sidebar = () => {
           R
         </div>
         <span className="text-xl font-bold tracking-tight">RevEngine</span>
+        {onClose && <button onClick={onClose} className="lg:hidden ml-auto p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800"><X size={18} /></button>}
+        {onClose && (
+          <button onClick={onClose} className="lg:hidden ml-auto p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-all"><X size={18} /></button>
+        )}
       </div>
 
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
@@ -38,6 +43,7 @@ const Sidebar = () => {
             <Link
               key={item.name}
               to={item.path}
+              onClick={() => onClose && onClose()}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium shadow-md ${
                 isActive
                   ? `${item.activeClass} text-white`
