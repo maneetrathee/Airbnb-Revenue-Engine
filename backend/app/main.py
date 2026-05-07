@@ -80,6 +80,10 @@ def get_sync_status():
     status["active_properties"] = int(active or 0)
     return status
 
+@app.get("/health", tags=["Health"])
+async def health_check():
+    return {"status": "ok", "message": "Render keep-alive ping successful"}
+
 @app.post("/api/v1/sync/run-all")
 def trigger_all_syncs():
     run_nightly_sync()
